@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/router/app_routes.dart';
 
 import '../data/auth_providers.dart';
 
@@ -25,37 +26,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _login() async {
+Future<void> _login() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  final usernameOrEmail = _usernameOrEmailController.text.trim();
+  final password = _passwordController.text;
+
+debugPrint('EMAIL=[${_usernameOrEmailController.text.trim()}]');
+debugPrint('PASSWORD LENGTH=[${_passwordController.text.length}]');
+
+  try {
+    await ref.read(authRepositoryProvider).login(
+          usernameOrEmail: usernameOrEmail,
+          password: password,
+        );
+
+    debugPrint('LOGIN SUCCESS');
+
+    if (!mounted) {
+      return;
+    }
+
+    context.go(AppRoutes.tenantDashboard);
+  } catch (error, stackTrace) {
+    debugPrint('LOGIN FAILED: $error');
+    debugPrint('LOGIN STACKTRACE: $stackTrace');
+
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _errorMessage = 'Login failed: $error';
     });
-
-    try {
-      await ref.read(authRepositoryProvider).login(
-            usernameOrEmail: _usernameOrEmailController.text.trim(),
-            password: _passwordController.text,
-          );
-
-      if (!mounted) {
-        return;
-      }
-
-      context.go('/tenant/dashboard');
-      
-    } catch (_) {
+  } finally {
+    if (mounted) {
       setState(() {
-        _errorMessage = 'Invalid username/email or password.';
+        _isLoading = false;
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

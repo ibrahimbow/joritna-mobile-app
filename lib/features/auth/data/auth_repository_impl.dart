@@ -13,20 +13,22 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthApiClient _authApiClient;
   final TokenStorage _tokenStorage;
 
-  @override
-  Future<void> login({
-    required String usernameOrEmail,
-    required String password,
-  }) async {
-    final response = await _authApiClient.login(
-      LoginRequest(
-        usernameOrEmail: usernameOrEmail,
-        password: password,
-      ),
-    );
+@override
+Future<void> login({
+  required String usernameOrEmail,
+  required String password,
+}) async {
+  await _tokenStorage.clearTokens();
 
-    await _tokenStorage.saveAccessToken(
-      response.accessToken,
-    );
-  }
+  final response = await _authApiClient.login(
+    LoginRequest(
+      usernameOrEmail: usernameOrEmail,
+      password: password,
+    ),
+  );
+
+  await _tokenStorage.saveAccessToken(
+    response.accessToken,
+  );
+}
 }

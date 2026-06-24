@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'config/app_config.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
-import 'config/app_config.dart';
 
-class JoritnaMobileApp extends StatelessWidget {
+class JoritnaMobileApp extends ConsumerWidget {
   const JoritnaMobileApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
-     title: AppConfig.appName,
+      title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      routerConfig: appRouter,
+      routerConfig: router,
     );
   }
 }
