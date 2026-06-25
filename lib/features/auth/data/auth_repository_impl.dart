@@ -31,4 +31,9 @@ Future<void> login({
     response.accessToken,
   );
 }
+
+@override
+Future<void> logout() async {
+  await _tokenStorage.clearTokens();
+}
 }

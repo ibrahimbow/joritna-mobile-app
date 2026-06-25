@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/router/app_routes.dart';
 
+import '../../../app/router/app_routes.dart';
+import '../../tenant/building/data/building_providers.dart';
 import '../data/auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -26,50 +27,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-Future<void> _login() async {
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
-
-  final usernameOrEmail = _usernameOrEmailController.text.trim();
-  final password = _passwordController.text;
-
-debugPrint('EMAIL=[${_usernameOrEmailController.text.trim()}]');
-debugPrint('PASSWORD LENGTH=[${_passwordController.text.length}]');
-
-  try {
-    await ref.read(authRepositoryProvider).login(
-          usernameOrEmail: usernameOrEmail,
-          password: password,
-        );
-
-    debugPrint('LOGIN SUCCESS');
-
-    if (!mounted) {
-      return;
-    }
-
-    context.go(AppRoutes.tenantDashboard);
-  } catch (error, stackTrace) {
-    debugPrint('LOGIN FAILED: $error');
-    debugPrint('LOGIN STACKTRACE: $stackTrace');
-
-    if (!mounted) {
-      return;
-    }
-
+  Future<void> _login() async {
     setState(() {
-      _errorMessage = 'Login failed: $error';
+      _isLoading = true;
+      _errorMessage = null;
     });
-  } finally {
-    if (mounted) {
+
+    final usernameOrEmail = _usernameOrEmailController.text.trim();
+    final password = _passwordController.text;
+
+    try {
+      await ref.read(authRepositoryProvider).login(
+            usernameOrEmail: usernameOrEmail,
+            password: password,
+          );
+
+      final hasBuilding = await ref
+          .read(
+            buildingRepositoryProvider,
+          )
+          .hasMyBuilding();
+
+      if (!mounted) {
+        return;
+      }
+
+      context.go(
+        hasBuilding
+            ? AppRoutes.tenantDashboard
+            : AppRoutes.tenantBuilding,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('LOGIN FAILED: $error');
+      debugPrint('LOGIN STACKTRACE: $stackTrace');
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
-        _isLoading = false;
+        _errorMessage = 'Login failed. Please check your details.';
       });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,10 +126,17 @@ debugPrint('PASSWORD LENGTH=[${_passwordController.text.length}]');
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
+                      height: 48,
                       child: FilledButton(
                         onPressed: _isLoading ? null : _login,
                         child: _isLoading
-                            ? const CircularProgressIndicator()
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
                             : const Text('Login'),
                       ),
                     ),

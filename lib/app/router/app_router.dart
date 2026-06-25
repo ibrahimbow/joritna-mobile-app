@@ -11,7 +11,9 @@ import '../../features/tenant/announcements/presentation/announcements_screen.da
 import '../../features/community/chat/presentation/chat_screen.dart';
 import '../../features/community/share_and_help/presentation/share_and_help_screen.dart';
 import '../../features/community/share_and_help/presentation/create_post_screen.dart';
-import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/tenant/settings/presentation/settings_screen.dart';
+
+
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(

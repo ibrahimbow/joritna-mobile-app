@@ -37,10 +37,10 @@ class JoritnaBottomNavigationBar extends StatelessWidget {
           ),
 
           _BottomNavItem(
-            icon: Icons.add_circle_rounded,
-            label: 'Add Post',
+            icon: Icons.campaign_rounded,
+            label: 'Announcement',
             selected: selectedIndex == 2,
-            onTap: () => context.go(AppRoutes.tenantCreatePost),
+            onTap: () => context.go(AppRoutes.tenantAnnouncements),
           ),
 
           _BottomNavItem(

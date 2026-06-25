@@ -6,6 +6,7 @@ class AppRoutes {
 
   static const tenantDashboard = '/tenant/dashboard';
   static const tenantBuilding = '/tenant/building';
+  static const tenantJoinBuilding = '/tenant/join-building';
   static const tenantAnnouncements = '/tenant/announcements';
   static const tenantChat = '/tenant/chat';
   static const tenantShareAndHelp = '/tenant/share-and-help';
