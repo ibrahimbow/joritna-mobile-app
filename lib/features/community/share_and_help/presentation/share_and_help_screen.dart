@@ -57,9 +57,7 @@ class ShareAndHelpScreen extends ConsumerWidget {
                     itemCount: posts.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      return _ShareAndHelpPostCard(
-                        post: posts[index],
-                      );
+                      return _ShareAndHelpPostCard(post: posts[index]);
                     },
                   );
                 },
@@ -76,9 +74,7 @@ class ShareAndHelpScreen extends ConsumerWidget {
 class _ShareAndHelpHeader extends StatelessWidget {
   final VoidCallback onCreatePost;
 
-  const _ShareAndHelpHeader({
-    required this.onCreatePost,
-  });
+  const _ShareAndHelpHeader({required this.onCreatePost});
 
   @override
   Widget build(BuildContext context) {
@@ -123,9 +119,7 @@ class _ShareAndHelpHeader extends StatelessWidget {
 class _ShareAndHelpPostCard extends ConsumerStatefulWidget {
   final ShareAndHelpPost post;
 
-  const _ShareAndHelpPostCard({
-    required this.post,
-  });
+  const _ShareAndHelpPostCard({required this.post});
 
   @override
   ConsumerState<_ShareAndHelpPostCard> createState() =>
@@ -163,13 +157,12 @@ class _ShareAndHelpPostCardState extends ConsumerState<_ShareAndHelpPostCard> {
     });
 
     try {
-      final updatedPost =
-          await ref.read(shareAndHelpRepositoryProvider).addComment(
-                postId: _post.id,
-                request: AddShareAndHelpCommentRequest(
-                  comment: comment,
-                ),
-              );
+      final updatedPost = await ref
+          .read(shareAndHelpRepositoryProvider)
+          .addComment(
+            postId: _post.id,
+            request: AddShareAndHelpCommentRequest(comment: comment),
+          );
 
       setState(() {
         _post = updatedPost;
@@ -184,11 +177,9 @@ class _ShareAndHelpPostCardState extends ConsumerState<_ShareAndHelpPostCard> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not add comment: $error'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not add comment: $error')));
     } finally {
       if (mounted) {
         setState(() {
@@ -251,12 +242,6 @@ class _ShareAndHelpPostCardState extends ConsumerState<_ShareAndHelpPostCard> {
           Row(
             children: [
               _PostActionChip(
-                icon: Icons.thumb_up_alt_outlined,
-                label: 'Support',
-                onTap: () {},
-              ),
-              const SizedBox(width: 10),
-              _PostActionChip(
                 icon: Icons.mode_comment_rounded,
                 label: '$commentsCount comments',
                 onTap: () {
@@ -306,10 +291,7 @@ class _ShareAndHelpPostCardState extends ConsumerState<_ShareAndHelpPostCard> {
             if (_post.comments.isEmpty)
               const Text(
                 'No comments yet. Be the first to comment.',
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
               )
             else
               ..._post.comments.map(
@@ -353,18 +335,11 @@ class _PostActionChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: Color(0xFF2563EB),
-              ),
+              Icon(icon, size: 16, color: Color(0xFF2563EB)),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -425,9 +400,7 @@ class _CommentItem extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
-                border: Border.all(
-                  color: const Color(0xFFE2E8F0),
-                ),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -504,15 +477,11 @@ class _CommentInput extends StatelessWidget {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
-                borderSide: const BorderSide(
-                  color: Color(0xFFCBD5E1),
-                ),
+                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(999),
-                borderSide: const BorderSide(
-                  color: Color(0xFF2563EB),
-                ),
+                borderSide: const BorderSide(color: Color(0xFF2563EB)),
               ),
             ),
           ),
@@ -582,10 +551,7 @@ class _PostAuthorRow extends StatelessWidget {
               ),
               Text(
                 AppDateUtils.timeAgo(createdAt),
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
               ),
             ],
           ),
@@ -598,9 +564,7 @@ class _PostAuthorRow extends StatelessWidget {
 class _PostImage extends StatelessWidget {
   final String imageUrl;
 
-  const _PostImage({
-    required this.imageUrl,
-  });
+  const _PostImage({required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {

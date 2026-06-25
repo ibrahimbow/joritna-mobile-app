@@ -23,9 +23,7 @@ class AppShell extends StatelessWidget {
         color: Colors.white,
         child: SafeArea(
           top: false,
-          child: JoritnaBottomNavigationBar(
-            selectedIndex: selectedIndex,
-          ),
+          child: JoritnaBottomNavigationBar(selectedIndex: selectedIndex),
         ),
       ),
     );

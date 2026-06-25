@@ -1,18 +1,18 @@
-class UploadedFileResult {
-  final String fileName;
-  final String url;
-  final String contentType;
-  final int size;
-
-  const UploadedFileResult({
+class UploadedFile {
+  const UploadedFile({
     required this.fileName,
     required this.url,
     required this.contentType,
     required this.size,
   });
 
-  factory UploadedFileResult.fromJson(Map<String, dynamic> json) {
-    return UploadedFileResult(
+  final String fileName;
+  final String url;
+  final String contentType;
+  final int size;
+
+  factory UploadedFile.fromJson(Map<String, dynamic> json) {
+    return UploadedFile(
       fileName: json['fileName'] as String,
       url: json['url'] as String,
       contentType: json['contentType'] as String,

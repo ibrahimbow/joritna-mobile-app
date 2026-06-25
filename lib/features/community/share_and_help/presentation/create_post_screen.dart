@@ -70,11 +70,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not upload image: $error'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not upload image: $error')));
     } finally {
       if (mounted) {
         setState(() {
@@ -103,7 +101,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     });
 
     try {
-      await ref.read(shareAndHelpRepositoryProvider).createPost(
+      await ref
+          .read(shareAndHelpRepositoryProvider)
+          .createPost(
             CreateShareAndHelpPostRequest(
               title: _titleController.text.trim(),
               description: _descriptionController.text.trim(),
@@ -111,9 +111,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ),
           );
 
-      ref.invalidate(
-        shareAndHelpPostsProvider,
-      );
+      ref.invalidate(shareAndHelpPostsProvider);
 
       if (!mounted) {
         return;
@@ -125,11 +123,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not create post: $error'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not create post: $error')));
     } finally {
       if (mounted) {
         setState(() {
@@ -232,17 +228,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.image_outlined),
                 label: Text(
                   _isUploadingImage
                       ? 'Uploading image...'
                       : _selectedImage == null
-                          ? 'Add image'
-                          : 'Change image',
+                      ? 'Add image'
+                      : 'Change image',
                 ),
               ),
               if (_selectedImage != null) ...[
@@ -288,17 +282,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.send_rounded),
                   label: Text(
                     _isUploadingImage
                         ? 'Uploading image...'
                         : _isSubmitting
-                            ? 'Posting...'
-                            : 'Post',
+                        ? 'Posting...'
+                        : 'Post',
                   ),
                 ),
               ),

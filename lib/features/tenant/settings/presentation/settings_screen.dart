@@ -9,31 +9,20 @@ import '../../../shared/presentation/layout/app_shell.dart';
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  Future<void> _logout(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Logout'),
-          content: const Text(
-            'Are you sure you want to logout?',
-          ),
+          content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(
-                context,
-                false,
-              ),
+              onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(
-                context,
-                true,
-              ),
+              onPressed: () => Navigator.pop(context, true),
               child: const Text('Logout'),
             ),
           ],
@@ -51,16 +40,11 @@ class SettingsScreen extends ConsumerWidget {
       return;
     }
 
-    context.go(
-      AppRoutes.login,
-    );
+    context.go(AppRoutes.login);
   }
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppShell(
       selectedIndex: 0,
       child: SafeArea(
@@ -69,10 +53,7 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             const Text(
               'Settings',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
 
@@ -111,14 +92,9 @@ class SettingsScreen extends ConsumerWidget {
                 backgroundColor: Colors.red,
                 minimumSize: const Size.fromHeight(52),
               ),
-              onPressed: () => _logout(
-                context,
-                ref,
-              ),
+              onPressed: () => _logout(context, ref),
               icon: const Icon(Icons.logout),
-              label: const Text(
-                'Logout',
-              ),
+              label: const Text('Logout'),
             ),
           ],
         ),
@@ -146,15 +122,10 @@ class _SettingsTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: const Color(0xFF0057C8),
-        ),
+        leading: Icon(icon, color: const Color(0xFF0057C8)),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
         onTap: onTap,
       ),
     );

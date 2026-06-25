@@ -1,9 +1,7 @@
 class AppStringUtils {
   const AppStringUtils._();
 
-  static String initials(
-    String displayName,
-  ) {
+  static String initials(String displayName) {
     final parts = displayName
         .trim()
         .split(' ')
@@ -18,13 +16,10 @@ class AppStringUtils {
       return parts.first[0].toUpperCase();
     }
 
-    return '${parts.first[0]}${parts.last[0]}'
-        .toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
-  static bool isBlank(
-    String? value,
-  ) {
+  static bool isBlank(String? value) {
     return value == null || value.trim().isEmpty;
   }
 }

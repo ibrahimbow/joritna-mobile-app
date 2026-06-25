@@ -19,11 +19,7 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.add(
-    AuthInterceptor(
-      ref.watch(tokenStorageProvider),
-    ),
-  );
+  dio.interceptors.add(AuthInterceptor(ref.watch(tokenStorageProvider)));
 
   return dio;
 });

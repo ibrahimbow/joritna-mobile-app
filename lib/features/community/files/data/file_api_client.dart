@@ -6,19 +6,12 @@ import 'models/uploaded_file_result.dart';
 class FileApiClient {
   final Dio _dio;
 
-  const FileApiClient(
-    this._dio,
-  );
+  const FileApiClient(this._dio);
 
-  Future<UploadedFileResult> uploadShareAndHelpImage(
-    XFile image,
-  ) async {
+  Future<UploadedFileResult> uploadShareAndHelpImage(XFile image) async {
     final formData = FormData.fromMap({
       'type': 'SHARE_AND_HELP_IMAGE',
-      'file': await MultipartFile.fromFile(
-        image.path,
-        filename: image.name,
-      ),
+      'file': await MultipartFile.fromFile(image.path, filename: image.name),
     });
 
     final response = await _dio.post<Map<String, dynamic>>(
@@ -26,8 +19,6 @@ class FileApiClient {
       data: formData,
     );
 
-    return UploadedFileResult.fromJson(
-      response.data!,
-    );
+    return UploadedFileResult.fromJson(response.data!);
   }
 }

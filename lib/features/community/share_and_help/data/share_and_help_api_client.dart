@@ -15,11 +15,7 @@ class ShareAndHelpApiClient {
     final response = await _dio.get<List<dynamic>>(_basePath);
 
     return (response.data ?? [])
-        .map(
-          (json) => ShareAndHelpPost.fromJson(
-            json as Map<String, dynamic>,
-          ),
-        )
+        .map((json) => ShareAndHelpPost.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 
@@ -66,8 +62,6 @@ class ShareAndHelpApiClient {
     required String postId,
     required String commentId,
   }) async {
-    await _dio.delete<void>(
-      '$_basePath/$postId/comments/$commentId',
-    );
+    await _dio.delete<void>('$_basePath/$postId/comments/$commentId');
   }
 }

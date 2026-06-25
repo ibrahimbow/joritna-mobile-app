@@ -11,26 +11,18 @@ class BuildingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buildingState = ref.watch(
-      myBuildingProvider,
-    );
+    final buildingState = ref.watch(myBuildingProvider);
 
     return buildingState.when(
       loading: () => const Scaffold(
         backgroundColor: Color(0xFFF8FAFC),
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       ),
       error: (_, __) => const _JoinBuildingView(),
       data: (building) {
         return AppShell(
           selectedIndex: 1,
-          child: SafeArea(
-            child: _BuildingDetailsView(
-              building: building,
-            ),
-          ),
+          child: SafeArea(child: _BuildingDetailsView(building: building)),
         );
       },
     );
@@ -41,8 +33,7 @@ class _JoinBuildingView extends ConsumerStatefulWidget {
   const _JoinBuildingView();
 
   @override
-  ConsumerState<_JoinBuildingView> createState() =>
-      _JoinBuildingViewState();
+  ConsumerState<_JoinBuildingView> createState() => _JoinBuildingViewState();
 }
 
 class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
@@ -73,15 +64,11 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
     });
 
     try {
-      await ref.read(buildingRepositoryProvider).joinBuilding(
-            JoinBuildingRequest(
-              code: code,
-            ),
-          );
+      await ref
+          .read(buildingRepositoryProvider)
+          .joinBuilding(JoinBuildingRequest(code: code));
 
-      ref.invalidate(
-        myBuildingProvider,
-      );
+      ref.invalidate(myBuildingProvider);
     } catch (_) {
       if (!mounted) {
         return;
@@ -106,9 +93,7 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 500,
-            ),
+            constraints: const BoxConstraints(maxWidth: 500),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -145,9 +130,7 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
                     decoration: InputDecoration(
                       labelText: 'Building code',
                       hintText: 'Example: BM-447124',
-                      prefixIcon: const Icon(
-                        Icons.key_rounded,
-                      ),
+                      prefixIcon: const Icon(Icons.key_rounded),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -174,26 +157,17 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(
-                              Icons.login_rounded,
-                            ),
-                      label: Text(
-                        _isJoining ? 'Joining...' : 'Join Building',
-                      ),
+                          : const Icon(Icons.login_rounded),
+                      label: Text(_isJoining ? 'Joining...' : 'Join Building'),
                     ),
                   ),
                   const SizedBox(height: 28),
                   const Text(
                     'You only need to join your building once.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                   ),
                 ],
               ),
@@ -208,35 +182,22 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
 class _BuildingDetailsView extends ConsumerWidget {
   final Building building;
 
-  const _BuildingDetailsView({
-    required this.building,
-  });
+  const _BuildingDetailsView({required this.building});
 
-  Future<void> _leaveBuilding(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _leaveBuilding(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Leave building'),
-          content: const Text(
-            'Are you sure you want to leave this building?',
-          ),
+          content: const Text('Are you sure you want to leave this building?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(
-                context,
-                false,
-              ),
+              onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(
-                context,
-                true,
-              ),
+              onPressed: () => Navigator.pop(context, true),
               child: const Text('Leave'),
             ),
           ],
@@ -250,9 +211,7 @@ class _BuildingDetailsView extends ConsumerWidget {
 
     await ref.read(buildingRepositoryProvider).leaveBuilding();
 
-    ref.invalidate(
-      myBuildingProvider,
-    );
+    ref.invalidate(myBuildingProvider);
   }
 
   @override
@@ -271,10 +230,7 @@ class _BuildingDetailsView extends ConsumerWidget {
         const SizedBox(height: 8),
         const Text(
           'Your private building community information.',
-          style: TextStyle(
-            color: Color(0xFF64748B),
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
         ),
         const SizedBox(height: 24),
         _InfoTile(
@@ -309,16 +265,9 @@ class _BuildingDetailsView extends ConsumerWidget {
         ),
         const SizedBox(height: 24),
         OutlinedButton.icon(
-          onPressed: () => _leaveBuilding(
-            context,
-            ref,
-          ),
-          icon: const Icon(
-            Icons.logout_rounded,
-          ),
-          label: const Text(
-            'Leave Building',
-          ),
+          onPressed: () => _leaveBuilding(context, ref),
+          icon: const Icon(Icons.logout_rounded),
+          label: const Text('Leave Building'),
         ),
       ],
     );
@@ -344,16 +293,11 @@ class _InfoTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF0057C8),
-          ),
+          Icon(icon, color: const Color(0xFF0057C8)),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

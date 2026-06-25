@@ -38,9 +38,8 @@ class ShareAndHelpPost {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       comments: (json['comments'] as List<dynamic>? ?? [])
           .map(
-            (comment) => ShareAndHelpComment.fromJson(
-              comment as Map<String, dynamic>,
-            ),
+            (comment) =>
+                ShareAndHelpComment.fromJson(comment as Map<String, dynamic>),
           )
           .toList(),
     );

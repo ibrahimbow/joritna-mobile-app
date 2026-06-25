@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'models/current_user.dart';
 
 class ProfileApiClient {
-
   final Dio _dio;
 
   ProfileApiClient(this._dio);

@@ -11,16 +11,12 @@ class JoinBuildingScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: const Color(0xFF0F172A),
-        title: const Text(
-          'Join Building',
-        ),
+        title: const Text('Join Building'),
       ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 500,
-            ),
+            constraints: const BoxConstraints(maxWidth: 500),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -64,9 +60,7 @@ class JoinBuildingScreen extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: 'Building Code',
                       hintText: 'Example: BM-447124',
-                      prefixIcon: const Icon(
-                        Icons.key_rounded,
-                      ),
+                      prefixIcon: const Icon(Icons.key_rounded),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -80,22 +74,15 @@ class JoinBuildingScreen extends StatelessWidget {
                       onPressed: () {
                         // TODO: Join Building
                       },
-                      icon: const Icon(
-                        Icons.login_rounded,
-                      ),
-                      label: const Text(
-                        'Join Building',
-                      ),
+                      icon: const Icon(Icons.login_rounded),
+                      label: const Text('Join Building'),
                     ),
                   ),
                   const SizedBox(height: 32),
                   const Text(
                     'You only need to join your building once.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                   ),
                 ],
               ),

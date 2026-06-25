@@ -4,14 +4,10 @@ import 'models/requests/add_share_and_help_comment_request.dart';
 import 'models/requests/create_share_and_help_post_request.dart';
 import 'share_and_help_api_client.dart';
 
-class ShareAndHelpRepositoryImpl
-    implements ShareAndHelpRepository {
-
+class ShareAndHelpRepositoryImpl implements ShareAndHelpRepository {
   final ShareAndHelpApiClient _apiClient;
 
-  const ShareAndHelpRepositoryImpl(
-    this._apiClient,
-  );
+  const ShareAndHelpRepositoryImpl(this._apiClient);
 
   @override
   Future<List<ShareAndHelpPost>> getPosts() {
@@ -19,9 +15,7 @@ class ShareAndHelpRepositoryImpl
   }
 
   @override
-  Future<ShareAndHelpPost> createPost(
-    CreateShareAndHelpPostRequest request,
-  ) {
+  Future<ShareAndHelpPost> createPost(CreateShareAndHelpPostRequest request) {
     return _apiClient.createPost(request);
   }
 
@@ -30,16 +24,11 @@ class ShareAndHelpRepositoryImpl
     required String postId,
     required CreateShareAndHelpPostRequest request,
   }) {
-    return _apiClient.updatePost(
-      postId: postId,
-      request: request,
-    );
+    return _apiClient.updatePost(postId: postId, request: request);
   }
 
   @override
-  Future<void> deletePost(
-    String postId,
-  ) {
+  Future<void> deletePost(String postId) {
     return _apiClient.deletePost(postId);
   }
 
@@ -48,10 +37,7 @@ class ShareAndHelpRepositoryImpl
     required String postId,
     required AddShareAndHelpCommentRequest request,
   }) {
-    return _apiClient.addComment(
-      postId: postId,
-      request: request,
-    );
+    return _apiClient.addComment(postId: postId, request: request);
   }
 
   @override
@@ -59,9 +45,6 @@ class ShareAndHelpRepositoryImpl
     required String postId,
     required String commentId,
   }) {
-    return _apiClient.deleteComment(
-      postId: postId,
-      commentId: commentId,
-    );
+    return _apiClient.deleteComment(postId: postId, commentId: commentId);
   }
 }

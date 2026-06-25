@@ -6,7 +6,5 @@ import 'file_api_client.dart';
 final fileApiClientProvider = Provider<FileApiClient>((ref) {
   final dio = ref.watch(dioProvider);
 
-  return FileApiClient(
-    dio,
-  );
+  return FileApiClient(dio);
 });

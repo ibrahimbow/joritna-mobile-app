@@ -6,25 +6,13 @@ import 'building_api_client.dart';
 import 'building_repository_impl.dart';
 
 final buildingApiClientProvider = Provider<BuildingApiClient>((ref) {
-  return BuildingApiClient(
-    ref.watch(
-      dioProvider,
-    ),
-  );
+  return BuildingApiClient(ref.watch(dioProvider));
 });
 
 final buildingRepositoryProvider = Provider<BuildingRepository>((ref) {
-  return BuildingRepositoryImpl(
-    ref.watch(
-      buildingApiClientProvider,
-    ),
-  );
+  return BuildingRepositoryImpl(ref.watch(buildingApiClientProvider));
 });
 
 final myBuildingProvider = FutureProvider.autoDispose((ref) async {
-  return ref
-      .watch(
-        buildingRepositoryProvider,
-      )
-      .getMyBuilding();
+  return ref.watch(buildingRepositoryProvider).getMyBuilding();
 });

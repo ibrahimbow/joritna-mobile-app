@@ -5,18 +5,14 @@ import '../data/models/requests/create_share_and_help_post_request.dart';
 abstract class ShareAndHelpRepository {
   Future<List<ShareAndHelpPost>> getPosts();
 
-  Future<ShareAndHelpPost> createPost(
-    CreateShareAndHelpPostRequest request,
-  );
+  Future<ShareAndHelpPost> createPost(CreateShareAndHelpPostRequest request);
 
   Future<ShareAndHelpPost> updatePost({
     required String postId,
     required CreateShareAndHelpPostRequest request,
   });
 
-  Future<void> deletePost(
-    String postId,
-  );
+  Future<void> deletePost(String postId);
 
   Future<ShareAndHelpPost> addComment({
     required String postId,

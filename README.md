@@ -1,16 +1,39 @@
-# joritna_mobile
+# Joritna Mobile App
 
-A new Flutter project.
+Joritna is a privacy-first residential community mobile application for apartment buildings.
 
-## Getting Started
+The app allows tenants and managers to communicate inside their own building community without exposing private phone numbers or personal social media accounts.
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- Secure login
+- Tenant dashboard
+- Building join flow
+- Building information
+- Share & Help community posts
+- Comments
+- Image upload support
+- User avatars
+- Role-based navigation foundation
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Tech Stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter
+- Dart
+- Riverpod
+- GoRouter
+- Dio
+- Flutter Secure Storage
+- REST API integration
+- Joritna Spring Boot microservices backend
+
+## Environment Configuration
+
+The app requires API URLs to be passed at runtime.
+
+### Local development
+
+```bash
+flutter run \
+  --dart-define=API_BASE_URL=http://10.0.2.2:8080/api \
+  --dart-define=WEB_SOCKET_BASE_URL=ws://10.0.2.2:8080

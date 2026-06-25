@@ -9,25 +9,16 @@ class TokenStorage {
   static const String _refreshTokenKey = 'refresh_token';
 
   Future<void> saveAccessToken(String token) async {
-    await _secureStorage.write(
-      key: _accessTokenKey,
-      value: token,
-    );
+    await _secureStorage.write(key: _accessTokenKey, value: token);
   }
 
   Future<String?> getAccessToken() async {
-    return _secureStorage.read(
-      key: _accessTokenKey,
-    );
+    return _secureStorage.read(key: _accessTokenKey);
   }
 
   Future<void> clearTokens() async {
-    await _secureStorage.delete(
-      key: _accessTokenKey,
-    );
+    await _secureStorage.delete(key: _accessTokenKey);
 
-    await _secureStorage.delete(
-      key: _refreshTokenKey,
-    );
+    await _secureStorage.delete(key: _refreshTokenKey);
   }
 }

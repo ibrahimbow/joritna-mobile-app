@@ -3,37 +3,35 @@ import '../../../../core/storage/token_storage.dart';
 
 import 'auth_api_client.dart';
 import 'models/login_request.dart';
+import '../../../core/user/current_user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  const AuthRepositoryImpl(
-    this._authApiClient,
-    this._tokenStorage,
-  );
+  const AuthRepositoryImpl(this._authApiClient, this._tokenStorage);
 
   final AuthApiClient _authApiClient;
   final TokenStorage _tokenStorage;
 
-@override
-Future<void> login({
-  required String usernameOrEmail,
-  required String password,
-}) async {
-  await _tokenStorage.clearTokens();
+  @override
+  Future<void> login({
+    required String usernameOrEmail,
+    required String password,
+  }) async {
+    await _tokenStorage.clearTokens();
 
-  final response = await _authApiClient.login(
-    LoginRequest(
-      usernameOrEmail: usernameOrEmail,
-      password: password,
-    ),
-  );
+    final response = await _authApiClient.login(
+      LoginRequest(usernameOrEmail: usernameOrEmail, password: password),
+    );
 
-  await _tokenStorage.saveAccessToken(
-    response.accessToken,
-  );
-}
+    await _tokenStorage.saveAccessToken(response.accessToken);
+  }
 
-@override
-Future<void> logout() async {
-  await _tokenStorage.clearTokens();
-}
+  @override
+  Future<CurrentUser> getProfile() {
+    return _authApiClient.getProfile();
+  }
+
+  @override
+  Future<void> logout() async {
+    await _tokenStorage.clearTokens();
+  }
 }

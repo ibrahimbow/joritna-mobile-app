@@ -37,15 +37,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final password = _passwordController.text;
 
     try {
-      await ref.read(authRepositoryProvider).login(
-            usernameOrEmail: usernameOrEmail,
-            password: password,
-          );
+      await ref
+          .read(authRepositoryProvider)
+          .login(usernameOrEmail: usernameOrEmail, password: password);
 
       final hasBuilding = await ref
-          .read(
-            buildingRepositoryProvider,
-          )
+          .read(buildingRepositoryProvider)
           .hasMyBuilding();
 
       if (!mounted) {
@@ -53,9 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       context.go(
-        hasBuilding
-            ? AppRoutes.tenantDashboard
-            : AppRoutes.tenantBuilding,
+        hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
       );
     } catch (error, stackTrace) {
       debugPrint('LOGIN FAILED: $error');
@@ -82,9 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 420,
-          ),
+          constraints: const BoxConstraints(maxWidth: 420),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Card(

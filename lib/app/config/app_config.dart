@@ -18,6 +18,14 @@ class AppConfig {
       return _apiBaseUrlFromEnv;
     }
 
+    assert(() {
+      debugPrint(
+        '⚠️ API_BASE_URL was not supplied. '
+        'Using development default.',
+      );
+      return true;
+    }());
+
     if (kIsWeb) {
       return 'http://localhost:8080/api';
     }
@@ -30,10 +38,23 @@ class AppConfig {
       return _webSocketBaseUrlFromEnv;
     }
 
+    assert(() {
+      debugPrint(
+        '⚠️ WEB_SOCKET_BASE_URL was not supplied. '
+        'Using development default.',
+      );
+      return true;
+    }());
+
     if (kIsWeb) {
       return 'ws://localhost:8080';
     }
 
     return 'ws://10.0.2.2:8080';
   }
+
+  static bool get isProduction =>
+      !kDebugMode &&
+      _apiBaseUrlFromEnv.isNotEmpty &&
+      _webSocketBaseUrlFromEnv.isNotEmpty;
 }
