@@ -5,16 +5,18 @@ import 'models/requests/create_share_and_help_post_request.dart';
 import 'models/share_and_help_post.dart';
 
 class ShareAndHelpApiClient {
-  final Dio _dio;
-
   const ShareAndHelpApiClient(this._dio);
+
+  final Dio _dio;
 
   static const String _basePath = '/tenant/share-and-help/posts';
 
   Future<List<ShareAndHelpPost>> getPosts() async {
     final response = await _dio.get<List<dynamic>>(_basePath);
 
-    return (response.data ?? [])
+    final data = response.data ?? [];
+
+    return data
         .map((json) => ShareAndHelpPost.fromJson(json as Map<String, dynamic>))
         .toList();
   }

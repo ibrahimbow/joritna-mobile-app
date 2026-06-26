@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/community/chat/presentation/chat_screen.dart';
+import '../../features/community/share_and_help/data/models/share_and_help_post.dart';
 import '../../features/community/share_and_help/presentation/create_post_screen.dart';
 import '../../features/community/share_and_help/presentation/share_and_help_screen.dart';
 import '../../features/tenant/announcements/presentation/announcements_screen.dart';
@@ -67,7 +68,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.tenantCreatePost,
-        builder: (context, state) => const CreatePostScreen(),
+        builder: (context, state) {
+          final post = state.extra is ShareAndHelpPost
+              ? state.extra as ShareAndHelpPost
+              : null;
+
+          return CreatePostScreen(postToEdit: post);
+        },
       ),
       GoRoute(
         path: AppRoutes.tenantSettings,

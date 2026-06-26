@@ -2,32 +2,52 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../../core/file/file_url_resolver.dart';
 import '../../files/data/file_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
 import '../data/models/requests/create_share_and_help_post_request.dart';
+import '../data/models/share_and_help_post.dart';
 import '../data/share_and_help_providers.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
-  const CreatePostScreen({super.key});
+  const CreatePostScreen({super.key, this.postToEdit});
+
+  final ShareAndHelpPost? postToEdit;
 
   @override
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   final ImagePicker _imagePicker = ImagePicker();
 
   XFile? _selectedImage;
-  String? _uploadedImageUrl;
+  String? _imageUrl;
 
   bool _isSubmitting = false;
   bool _isUploadingImage = false;
+
+  bool get _isEditMode => widget.postToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final post = widget.postToEdit;
+
+    if (post != null) {
+      _titleController.text = post.title;
+      _descriptionController.text = post.description;
+      _imageUrl = post.imageUrl;
+    }
+  }
 
   @override
   void dispose() {
@@ -48,7 +68,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     setState(() {
       _selectedImage = image;
-      _uploadedImageUrl = null;
       _isUploadingImage = true;
     });
 
@@ -57,18 +76,21 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           .read(fileApiClientProvider)
           .uploadShareAndHelpImage(image);
 
-      setState(() {
-        _uploadedImageUrl = uploadedFile.url;
-      });
-    } catch (error) {
-      setState(() {
-        _selectedImage = null;
-        _uploadedImageUrl = null;
-      });
-
       if (!mounted) {
         return;
       }
+
+      setState(() {
+        _imageUrl = uploadedFile.url;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _selectedImage = null;
+      });
 
       ScaffoldMessenger.of(
         context,
@@ -85,11 +107,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   void _removeImage() {
     setState(() {
       _selectedImage = null;
-      _uploadedImageUrl = null;
+      _imageUrl = null;
     });
   }
 
-  Future<void> _createPost() async {
+  Future<void> _submitPost() async {
     if (!_formKey.currentState!.validate() ||
         _isSubmitting ||
         _isUploadingImage) {
@@ -100,16 +122,23 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       _isSubmitting = true;
     });
 
+    final request = CreateShareAndHelpPostRequest(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      imageUrl: _imageUrl,
+    );
+
     try {
-      await ref
-          .read(shareAndHelpRepositoryProvider)
-          .createPost(
-            CreateShareAndHelpPostRequest(
-              title: _titleController.text.trim(),
-              description: _descriptionController.text.trim(),
-              imageUrl: _uploadedImageUrl,
-            ),
-          );
+      final repository = ref.read(shareAndHelpRepositoryProvider);
+
+      if (_isEditMode) {
+        await repository.updatePost(
+          postId: widget.postToEdit!.id,
+          request: request,
+        );
+      } else {
+        await repository.createPost(request);
+      }
 
       ref.invalidate(shareAndHelpPostsProvider);
 
@@ -117,15 +146,21 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         return;
       }
 
-      Navigator.of(context).pop();
+      context.pop();
     } catch (error) {
       if (!mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not create post: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isEditMode
+                ? 'Could not update post: $error'
+                : 'Could not create post: $error',
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -138,6 +173,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final canSubmit = !_isSubmitting && !_isUploadingImage;
+    final resolvedImageUrl = FileUrlResolver.resolve(_imageUrl);
 
     return AppShell(
       selectedIndex: 4,
@@ -147,18 +183,22 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              const Text(
-                'Create Share & Help Post',
-                style: TextStyle(
+              Text(
+                _isEditMode
+                    ? 'Edit Share & Help Post'
+                    : 'Create Share & Help Post',
+                style: const TextStyle(
                   color: Color(0xFF0F172A),
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Ask for help, share something useful, or support your neighbours.',
-                style: TextStyle(
+              Text(
+                _isEditMode
+                    ? 'Update your post so neighbours see the latest information.'
+                    : 'Ask for help, share something useful, or support your neighbours.',
+                style: const TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 14,
                   height: 1.4,
@@ -234,12 +274,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 label: Text(
                   _isUploadingImage
                       ? 'Uploading image...'
-                      : _selectedImage == null
+                      : _imageUrl == null
                       ? 'Add image'
                       : 'Change image',
                 ),
               ),
-              if (_selectedImage != null) ...[
+              if (_selectedImage != null || resolvedImageUrl.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Stack(
                   children: [
@@ -247,11 +287,17 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       borderRadius: BorderRadius.circular(18),
                       child: AspectRatio(
                         aspectRatio: 16 / 9,
-                        child: Image.file(
-                          File(_selectedImage!.path),
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
+                        child: _selectedImage != null
+                            ? Image.file(
+                                File(_selectedImage!.path),
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              )
+                            : Image.network(
+                                resolvedImageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
                       ),
                     ),
                     Positioned(
@@ -277,19 +323,25 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton.icon(
-                  onPressed: canSubmit ? _createPost : null,
+                  onPressed: canSubmit ? _submitPost : null,
                   icon: _isSubmitting
                       ? const SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(Icons.send_rounded),
+                      : Icon(
+                          _isEditMode ? Icons.save_rounded : Icons.send_rounded,
+                        ),
                   label: Text(
                     _isUploadingImage
                         ? 'Uploading image...'
                         : _isSubmitting
-                        ? 'Posting...'
+                        ? _isEditMode
+                              ? 'Saving...'
+                              : 'Posting...'
+                        : _isEditMode
+                        ? 'Save changes'
                         : 'Post',
                   ),
                 ),
