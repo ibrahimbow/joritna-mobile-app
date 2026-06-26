@@ -1,30 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/app_routes.dart';
+import '../../../../core/file/file_url_resolver.dart';
+import '../../../../core/user/current_user_provider.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
 import '../data/building_providers.dart';
 import '../data/models/building.dart';
 import '../data/models/requests/join_building_request.dart';
 
 class BuildingScreen extends ConsumerWidget {
-  const BuildingScreen({super.key});
+  const BuildingScreen({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buildingState = ref.watch(myBuildingProvider);
+    final buildingState = ref.watch(
+      myBuildingProvider,
+    );
 
     return buildingState.when(
       loading: () => const Scaffold(
         backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
       error: (_, __) => const _JoinBuildingView(),
-      data: (building) {
-        return AppShell(
-          selectedIndex: 1,
-          child: SafeArea(child: _BuildingDetailsView(building: building)),
-        );
-      },
+      data: (building) => AppShell(
+        selectedIndex: 1,
+        child: SafeArea(
+          child: _BuildingDetailsView(
+            building: building,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -37,10 +49,9 @@ class _JoinBuildingView extends ConsumerStatefulWidget {
 }
 
 class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
-  final _codeController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
 
   bool _isJoining = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -51,32 +62,55 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
   Future<void> _joinBuilding() async {
     final code = _codeController.text.trim();
 
-    if (code.isEmpty) {
-      setState(() {
-        _errorMessage = 'Building code is required';
-      });
+    if (code.isEmpty || _isJoining) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please enter your building code.',
+          ),
+        ),
+      );
       return;
     }
 
     setState(() {
       _isJoining = true;
-      _errorMessage = null;
     });
 
     try {
-      await ref
-          .read(buildingRepositoryProvider)
-          .joinBuilding(JoinBuildingRequest(code: code));
+      await ref.read(buildingRepositoryProvider).joinBuilding(
+            JoinBuildingRequest(
+              code: code,
+            ),
+          );
 
-      ref.invalidate(myBuildingProvider);
+      ref.invalidate(
+        myBuildingProvider,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'You joined the building successfully.',
+          ),
+        ),
+      );
     } catch (_) {
       if (!mounted) {
         return;
       }
 
-      setState(() {
-        _errorMessage = 'Could not join building. Please check the code.';
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not join building. Please check the code.',
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -88,242 +122,327 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUserState = ref.watch(
+      currentUserProvider,
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.apartment_rounded,
-                    size: 72,
-                    color: Color(0xFF0057C8),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Join your building',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Enter the building code from your manager to access announcements, chat, and Share & Help.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextField(
-                    controller: _codeController,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(
-                      labelText: 'Building code',
-                      hintText: 'Example: BM-447124',
-                      prefixIcon: const Icon(Icons.key_rounded),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: FilledButton.icon(
-                      onPressed: _isJoining ? null : _joinBuilding,
-                      icon: _isJoining
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.login_rounded),
-                      label: Text(_isJoining ? 'Joining...' : 'Join Building'),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'You only need to join your building once.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                  ),
-                ],
-              ),
+        child: currentUserState.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(),
+          ),
+          error: (_, __) => const Center(
+            child: Text(
+              'Could not load your profile.',
             ),
           ),
+          data: (currentUser) {
+            return Column(
+              children: [
+                _WelcomeHeader(
+                  displayName: currentUser.displayName,
+                  role: currentUser.role,
+                  avatarUrl: currentUser.avatarUrl,
+                ),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 500,
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(
+                          24,
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.apartment_rounded,
+                              size: 64,
+                              color: Color(0xFF0057C8),
+                            ),
+                            const SizedBox(
+                              height: 24,
+                            ),
+                            const Text(
+                              'Join your building',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 12,
+                            ),
+                            const Text(
+                              'Enter the building code from your manager to access announcements, chat, and Share & Help.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 14,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 32,
+                            ),
+                            TextField(
+                              controller: _codeController,
+                              enabled: !_isJoining,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: InputDecoration(
+                                labelText: 'Building code',
+                                hintText: 'Example: BM-447124',
+                                prefixIcon: const Icon(
+                                  Icons.key_rounded,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: FilledButton.icon(
+                                onPressed: _isJoining ? null : _joinBuilding,
+                                icon: _isJoining
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.login_rounded,
+                                      ),
+                                label: Text(
+                                  _isJoining
+                                      ? 'Joining...'
+                                      : 'Join Building',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 28,
+                            ),
+                            const Text(
+                              'You only need to join your building once.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _BuildingDetailsView extends ConsumerWidget {
-  final Building building;
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({
+    required this.displayName,
+    required this.role,
+    required this.avatarUrl,
+  });
 
-  const _BuildingDetailsView({required this.building});
-
-  Future<void> _leaveBuilding(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Leave building'),
-          content: const Text('Are you sure you want to leave this building?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Leave'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) {
-      return;
-    }
-
-    await ref.read(buildingRepositoryProvider).leaveBuilding();
-
-    ref.invalidate(myBuildingProvider);
-  }
+  final String displayName;
+  final String role;
+  final String? avatarUrl;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final resolvedAvatarUrl = FileUrlResolver.resolve(
+      avatarUrl,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+        24,
+        20,
+        16,
+        32,
+      ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF0F2A5F),
+            Color(0xFF0057C8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 42,
+            backgroundColor: Colors.white,
+            backgroundImage: resolvedAvatarUrl.isNotEmpty
+                ? NetworkImage(
+                    resolvedAvatarUrl,
+                  )
+                : null,
+            child: resolvedAvatarUrl.isEmpty
+                ? const Icon(
+                    Icons.person_rounded,
+                    size: 42,
+                    color: Color(0xFF0057C8),
+                  )
+                : null,
+          ),
+          const SizedBox(
+            width: 16,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome back,',
+                  style: TextStyle(
+                    color: Colors.white.withValues(
+                      alpha: 0.85,
+                    ),
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(
+                  height: 2,
+                ),
+                Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(
+                      alpha: 0.2,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      30,
+                    ),
+                  ),
+                  child: Text(
+                    role.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => context.go(
+              AppRoutes.tenantSettings,
+            ),
+            icon: const Icon(
+              Icons.settings_rounded,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BuildingDetailsView extends StatelessWidget {
+  const _BuildingDetailsView({
+    required this.building,
+  });
+
+  final Building building;
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(
+        20,
+      ),
       children: [
         const Text(
-          'Building Details',
+          'My Building',
           style: TextStyle(
             color: Color(0xFF0F172A),
             fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Your private building community information.',
-          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+        const SizedBox(
+          height: 16,
         ),
-        const SizedBox(height: 24),
-        _InfoTile(
-          icon: Icons.apartment_rounded,
-          title: 'Building',
-          value: building.buildingName,
-        ),
-        _InfoTile(
-          icon: Icons.location_on_outlined,
-          title: 'Address',
-          value: building.address,
-        ),
-        _InfoTile(
-          icon: Icons.person_outline_rounded,
-          title: 'Manager',
-          value: building.managerName,
-        ),
-        _InfoTile(
-          icon: Icons.key_rounded,
-          title: 'Building code',
-          value: building.code,
-        ),
-        _InfoTile(
-          icon: Icons.home_work_outlined,
-          title: 'Apartments',
-          value: '${building.totalApartments}',
-        ),
-        _InfoTile(
-          icon: Icons.phone_rounded,
-          title: 'Emergency phone',
-          value: building.emergencyPhone,
-        ),
-        const SizedBox(height: 24),
-        OutlinedButton.icon(
-          onPressed: () => _leaveBuilding(context, ref),
-          icon: const Icon(Icons.logout_rounded),
-          label: const Text('Leave Building'),
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-
-  const _InfoTile({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF0057C8)),
-          const SizedBox(width: 14),
-          Expanded(
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(
+              20,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  value,
+                  building.buildingName,
                   style: const TextStyle(
                     color: Color(0xFF0F172A),
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Text(
+                  building.address,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 14,
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
