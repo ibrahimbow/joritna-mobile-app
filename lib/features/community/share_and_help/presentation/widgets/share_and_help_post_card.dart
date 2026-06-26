@@ -28,6 +28,8 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
 
   late ShareAndHelpPost _post;
 
+  int? _currentUserId;
+
   bool _showComments = false;
   bool _isSubmittingComment = false;
   bool _isDeletingComment = false;
@@ -35,7 +37,32 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
   @override
   void initState() {
     super.initState();
+
     _post = widget.post;
+
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      final currentUser = await ref.read(currentUserProvider.future);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _currentUserId = currentUser.userId;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _currentUserId = null;
+      });
+    }
   }
 
   @override
@@ -125,6 +152,14 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
         return;
       }
 
+      setState(() {
+        _post = _post.copyWith(
+          comments: _post.comments
+              .where((comment) => comment.id != commentId)
+              .toList(),
+        );
+      });
+
       ref.invalidate(shareAndHelpPostsProvider);
 
       ScaffoldMessenger.of(
@@ -175,13 +210,22 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
     context.push(AppRoutes.tenantCreatePost, extra: _post);
   }
 
+  bool _isOwner({required int ownerId, required int? currentUserId}) {
+    if (currentUserId == null) {
+      return false;
+    }
+
+    return ownerId.toString() == currentUserId.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
     final commentsCount = _post.comments.length;
 
-    final canEditPost =
-        currentUser != null && _post.createdByUserId == currentUser.userId;
+    final canEditPost = _isOwner(
+      ownerId: _post.createdByUserId,
+      currentUserId: _currentUserId,
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -253,9 +297,10 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
               )
             else
               ..._post.comments.map((comment) {
-                final canDeleteComment =
-                    currentUser != null &&
-                    comment.createdByUserId == currentUser.userId;
+                final canDeleteComment = _isOwner(
+                  ownerId: comment.createdByUserId,
+                  currentUserId: _currentUserId,
+                );
 
                 return CommentItem(
                   displayName: comment.createdByDisplayName,

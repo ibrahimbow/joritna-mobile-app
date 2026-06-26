@@ -1,13 +1,13 @@
 import '../domain/share_and_help_repository.dart';
-import 'models/share_and_help_post.dart';
 import 'models/requests/add_share_and_help_comment_request.dart';
 import 'models/requests/create_share_and_help_post_request.dart';
+import 'models/share_and_help_post.dart';
 import 'share_and_help_api_client.dart';
 
 class ShareAndHelpRepositoryImpl implements ShareAndHelpRepository {
-  final ShareAndHelpApiClient _apiClient;
-
   const ShareAndHelpRepositoryImpl(this._apiClient);
+
+  final ShareAndHelpApiClient _apiClient;
 
   @override
   Future<List<ShareAndHelpPost>> getPosts() {

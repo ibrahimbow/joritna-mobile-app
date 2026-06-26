@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../../app/router/app_routes.dart';
 import '../../../../../core/file/file_url_resolver.dart';
 import '../../files/data/file_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
@@ -118,6 +119,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       return;
     }
 
+    FocusScope.of(context).unfocus();
+
     setState(() {
       _isSubmitting = true;
     });
@@ -146,7 +149,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         return;
       }
 
-      context.pop();
+      context.go(AppRoutes.tenantShareAndHelp);
     } catch (error) {
       if (!mounted) {
         return;
@@ -181,7 +184,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             children: [
               Text(
                 _isEditMode
@@ -238,6 +242,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 maxLength: 5000,
                 minLines: 5,
                 maxLines: 8,
+                textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
                   labelText: 'Description',
                   hintText: 'Explain what you need or want to share...',

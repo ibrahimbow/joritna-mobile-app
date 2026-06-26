@@ -1,17 +1,6 @@
 import 'share_and_help_comment.dart';
 
 class ShareAndHelpPost {
-  final String id;
-  final int createdByUserId;
-  final String createdByDisplayName;
-  final String? createdByAvatarUrl;
-  final String title;
-  final String description;
-  final String? imageUrl;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final List<ShareAndHelpComment> comments;
-
   const ShareAndHelpPost({
     required this.id,
     required this.createdByUserId,
@@ -25,10 +14,21 @@ class ShareAndHelpPost {
     required this.comments,
   });
 
+  final String id;
+  final int createdByUserId;
+  final String createdByDisplayName;
+  final String? createdByAvatarUrl;
+  final String title;
+  final String description;
+  final String? imageUrl;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<ShareAndHelpComment> comments;
+
   factory ShareAndHelpPost.fromJson(Map<String, dynamic> json) {
     return ShareAndHelpPost(
       id: json['id'] as String,
-      createdByUserId: json['createdByUserId'] as int,
+      createdByUserId: (json['createdByUserId'] as num).toInt(),
       createdByDisplayName: json['createdByDisplayName'] as String,
       createdByAvatarUrl: json['createdByAvatarUrl'] as String?,
       title: json['title'] as String,
@@ -42,6 +42,32 @@ class ShareAndHelpPost {
                 ShareAndHelpComment.fromJson(comment as Map<String, dynamic>),
           )
           .toList(),
+    );
+  }
+
+  ShareAndHelpPost copyWith({
+    String? id,
+    int? createdByUserId,
+    String? createdByDisplayName,
+    String? createdByAvatarUrl,
+    String? title,
+    String? description,
+    String? imageUrl,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    List<ShareAndHelpComment>? comments,
+  }) {
+    return ShareAndHelpPost(
+      id: id ?? this.id,
+      createdByUserId: createdByUserId ?? this.createdByUserId,
+      createdByDisplayName: createdByDisplayName ?? this.createdByDisplayName,
+      createdByAvatarUrl: createdByAvatarUrl ?? this.createdByAvatarUrl,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      comments: comments ?? this.comments,
     );
   }
 }

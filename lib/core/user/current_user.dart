@@ -14,8 +14,16 @@ class CurrentUser {
   final String? avatarUrl;
 
   factory CurrentUser.fromJson(Map<String, dynamic> json) {
+    final rawUserId = json['userId'] ?? json['id'];
+
+    if (rawUserId == null) {
+      throw StateError(
+        'Current user profile response does not contain userId or id.',
+      );
+    }
+
     return CurrentUser(
-      userId: (json['userId'] as num).toInt(),
+      userId: (rawUserId as num).toInt(),
       email: json['email'] as String,
       role: json['role'] as String,
       displayName: json['displayName'] as String,
