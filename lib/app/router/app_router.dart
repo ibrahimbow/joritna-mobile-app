@@ -11,6 +11,7 @@ import '../../features/tenant/announcements/presentation/announcements_screen.da
 import '../../features/tenant/building/presentation/building_screen.dart';
 import '../../features/tenant/dashboard/presentation/tenant_dashboard_screen.dart';
 import '../../features/tenant/settings/presentation/settings_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import 'app_routes.dart';
 import 'route_guards.dart';
 
@@ -79,6 +80,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.tenantSettings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

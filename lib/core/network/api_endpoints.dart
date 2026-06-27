@@ -5,8 +5,13 @@ class ApiEndpoints {
   static const authLogin = '/auth/login';
   static const authProfile = '/auth/profile';
 
+  static const changePassword = '/auth/change-password';
+
   // Share & Help
   static const tenantShareAndHelpPosts = '/tenant/share-and-help/posts';
+
+  // Announcements
+  static const tenantAnnouncements = '/tenant/announcements';
 
   // Files
   static const fileUpload = '/files/upload';

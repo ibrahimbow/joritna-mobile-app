@@ -12,4 +12,5 @@ class AppRoutes {
   static const tenantShareAndHelp = '/tenant/share-and-help';
   static const tenantCreatePost = '/tenant/share-and-help/create';
   static const tenantSettings = '/tenant/settings';
+  static const profile = '/tenant/profile';
 }

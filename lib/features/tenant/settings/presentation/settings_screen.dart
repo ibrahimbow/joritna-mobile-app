@@ -61,7 +61,7 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.person_outline_rounded,
               title: 'Profile',
               subtitle: 'Update your personal information',
-              onTap: () {},
+              onTap: () => context.push(AppRoutes.profile),
             ),
 
             _SettingsTile(
