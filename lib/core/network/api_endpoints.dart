@@ -13,6 +13,9 @@ class ApiEndpoints {
   // Announcements
   static const tenantAnnouncements = '/tenant/announcements';
 
+  //change the password
+  static const authChangePassword = '/auth/change-password';
+
   // Files
   static const fileUpload = '/files/upload';
 }

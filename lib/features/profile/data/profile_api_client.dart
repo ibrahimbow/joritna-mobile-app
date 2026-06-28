@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../core/network/api_endpoints.dart';
+import 'models/change_password_request.dart';
 import 'models/current_user_profile.dart';
 import 'models/update_profile_request.dart';
 
@@ -22,5 +23,9 @@ class ProfileApiClient {
     );
 
     return CurrentUserProfile.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> changePassword(ChangePasswordRequest request) async {
+    await _dio.patch(ApiEndpoints.authChangePassword, data: request.toJson());
   }
 }

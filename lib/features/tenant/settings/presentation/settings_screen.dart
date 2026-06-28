@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../app/router/app_routes.dart';
 import '../../../auth/data/auth_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
+import 'widgets/change_password_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -68,7 +69,14 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.lock_outline_rounded,
               title: 'Change Password',
               subtitle: 'Update your password',
-              onTap: () {},
+              onTap: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => const ChangePasswordSheet(),
+                );
+              },
             ),
 
             _SettingsTile(

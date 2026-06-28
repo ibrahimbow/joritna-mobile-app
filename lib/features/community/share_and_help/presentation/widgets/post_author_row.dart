@@ -12,13 +12,21 @@ class PostAuthorRow extends StatelessWidget {
     required this.createdAt,
     required this.canEdit,
     required this.onEdit,
+    required this.canDelete,
+    required this.onDelete,
+    this.isDeleting = false,
   });
 
   final String displayName;
   final String? avatarUrl;
   final DateTime createdAt;
+
   final bool canEdit;
   final VoidCallback onEdit;
+
+  final bool canDelete;
+  final VoidCallback onDelete;
+  final bool isDeleting;
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +74,24 @@ class PostAuthorRow extends StatelessWidget {
           IconButton(
             tooltip: 'Edit post',
             visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB)),
             onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB)),
+          ),
+        if (canDelete)
+          IconButton(
+            tooltip: 'Delete post',
+            visualDensity: VisualDensity.compact,
+            onPressed: isDeleting ? null : onDelete,
+            icon: isDeleting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFFDC2626),
+                  ),
           ),
       ],
     );

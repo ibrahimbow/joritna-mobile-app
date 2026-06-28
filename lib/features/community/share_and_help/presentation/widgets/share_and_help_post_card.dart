@@ -28,6 +28,8 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
 
   late ShareAndHelpPost _post;
 
+  bool _isDeletingPost = false;
+
   int? _currentUserId;
 
   bool _showComments = false;
@@ -210,6 +212,79 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
     context.push(AppRoutes.tenantCreatePost, extra: _post);
   }
 
+  Future<void> _deletePost() async {
+    if (_isDeletingPost) {
+      return;
+    }
+
+    final confirmed = await _confirmDeletePost();
+
+    if (!confirmed) {
+      return;
+    }
+
+    setState(() {
+      _isDeletingPost = true;
+    });
+
+    try {
+      await ref.read(shareAndHelpRepositoryProvider).deletePost(_post.id);
+
+      ref.invalidate(shareAndHelpPostsProvider);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post deleted.')));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not delete post.')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDeletingPost = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _confirmDeletePost() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete post?'),
+          content: const Text(
+            'This post and its comments will be removed from Share & Help.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
   bool _isOwner({required int ownerId, required int? currentUserId}) {
     if (currentUserId == null) {
       return false;
@@ -251,6 +326,9 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
             createdAt: _post.createdAt,
             canEdit: canEditPost,
             onEdit: _editPost,
+            canDelete: canEditPost,
+            onDelete: _deletePost,
+            isDeleting: _isDeletingPost,
           ),
           const SizedBox(height: 14),
           Text(
