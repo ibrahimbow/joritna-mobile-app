@@ -20,17 +20,12 @@ class AppConfig {
 
     assert(() {
       debugPrint(
-        '⚠️ API_BASE_URL was not supplied. '
-        'Using development default.',
+        '⚠️ API_BASE_URL was not supplied. Using development default.',
       );
       return true;
     }());
 
-    if (kIsWeb) {
-      return 'http://localhost:8080/api';
-    }
-
-    return 'http://10.0.2.2:8080/api';
+    return _isWeb ? 'http://localhost:8080/api' : 'http://10.0.2.2:8080/api';
   }
 
   static String get webSocketBaseUrl {
@@ -40,21 +35,18 @@ class AppConfig {
 
     assert(() {
       debugPrint(
-        '⚠️ WEB_SOCKET_BASE_URL was not supplied. '
-        'Using development default.',
+        '⚠️ WEB_SOCKET_BASE_URL was not supplied. Using development default.',
       );
       return true;
     }());
 
-    if (kIsWeb) {
-      return 'ws://localhost:8080';
-    }
-
-    return 'ws://10.0.2.2:8080';
+    return _isWeb ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
   }
 
   static bool get isProduction =>
       !kDebugMode &&
       _apiBaseUrlFromEnv.isNotEmpty &&
       _webSocketBaseUrlFromEnv.isNotEmpty;
+
+  static bool get _isWeb => kIsWeb;
 }
