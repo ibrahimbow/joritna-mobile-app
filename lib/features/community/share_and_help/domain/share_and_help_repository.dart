@@ -26,6 +26,5 @@ abstract interface class ShareAndHelpRepository {
 
   Future<ShareAndHelpPost> resolvePost(String postId);
 
-Future<ShareAndHelpPost> reopenPost(String postId);
-
+  Future<ShareAndHelpPost> reopenPost(String postId);
 }

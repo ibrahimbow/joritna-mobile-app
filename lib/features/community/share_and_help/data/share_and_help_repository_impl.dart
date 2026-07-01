@@ -49,13 +49,12 @@ class ShareAndHelpRepositoryImpl implements ShareAndHelpRepository {
   }
 
   @override
-Future<ShareAndHelpPost> resolvePost(String postId) {
-  return _apiClient.resolvePost(postId);
-}
+  Future<ShareAndHelpPost> resolvePost(String postId) {
+    return _apiClient.resolvePost(postId);
+  }
 
-@override
-Future<ShareAndHelpPost> reopenPost(String postId) {
-  return _apiClient.reopenPost(postId);
-}
-
+  @override
+  Future<ShareAndHelpPost> reopenPost(String postId) {
+    return _apiClient.reopenPost(postId);
+  }
 }

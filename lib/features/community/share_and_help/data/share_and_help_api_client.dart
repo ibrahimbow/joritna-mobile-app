@@ -68,19 +68,18 @@ class ShareAndHelpApiClient {
   }
 
   Future<ShareAndHelpPost> resolvePost(String postId) async {
-  final response = await _dio.patch<Map<String, dynamic>>(
-    '$_basePath/$postId/resolve',
-  );
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '$_basePath/$postId/resolve',
+    );
 
-  return ShareAndHelpPost.fromJson(response.data!);
-}
+    return ShareAndHelpPost.fromJson(response.data!);
+  }
 
-Future<ShareAndHelpPost> reopenPost(String postId) async {
-  final response = await _dio.patch<Map<String, dynamic>>(
-    '$_basePath/$postId/reopen',
-  );
+  Future<ShareAndHelpPost> reopenPost(String postId) async {
+    final response = await _dio.patch<Map<String, dynamic>>(
+      '$_basePath/$postId/reopen',
+    );
 
-  return ShareAndHelpPost.fromJson(response.data!);
-}
-
+    return ShareAndHelpPost.fromJson(response.data!);
+  }
 }

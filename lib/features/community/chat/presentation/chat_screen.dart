@@ -11,6 +11,7 @@ import 'widgets/chat_connection_status_chip.dart';
 import 'widgets/chat_message_composer.dart';
 import 'widgets/chat_message_list.dart';
 import 'widgets/chat_reaction_picker.dart';
+import '../../../../core/file/file_url_resolver.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -95,51 +96,94 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               }
 
               return Scaffold(
-                backgroundColor: Theme.of(context).colorScheme.surface,
+                resizeToAvoidBottomInset: true,
+                backgroundColor: const Color(0xFFF4F7FB),
                 appBar: AppBar(
-                  titleSpacing: 0,
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  elevation: 0,
+                  backgroundColor: Colors.white,
+                  surfaceTintColor: Colors.white,
+                  titleSpacing: 16,
+                  title: Row(
                     children: [
-                      const Text(ChatTexts.title),
-                      const SizedBox(height: 4),
-                      ChatConnectionStatusChip(
-                        status: chatState.connectionStatus,
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF2563EB), Color(0xFF60A5FA)],
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.forum_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              ChatTexts.title,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            ChatConnectionStatusChip(
+                              status: chatState.connectionStatus,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
-                body: Column(
-                  children: [
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: () => chatNotifier.refresh(buildingId),
-                        child: ChatMessageList(
-                          messages: chatState.messages,
-                          loading: chatState.loading,
-                          currentUserId: chatState.currentUserId,
-                          scrollController: _scrollController.scrollController,
-                          resolveFileUrl: _resolveFileUrl,
-                          onDeleteMessage: chatNotifier.deleteMessage,
-                          onReactionTap: (messageId, emoji) {
-                            chatNotifier.toggleReaction(
-                              messageId: messageId,
-                              emoji: emoji,
-                            );
-                          },
-                          onLongPressMessage: (message) {
-                            _showReactionPicker(messageId: message.id);
-                          },
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFFF8FAFC), Color(0xEEF1F5FF)],
+                            ),
+                          ),
+                          child: RefreshIndicator(
+                            onRefresh: () => chatNotifier.refresh(buildingId),
+                            child: ChatMessageList(
+                              messages: chatState.messages,
+                              loading: chatState.loading,
+                              currentUserId: chatState.currentUserId,
+                              scrollController:
+                                  _scrollController.scrollController,
+                              resolveFileUrl: _resolveFileUrl,
+                              onDeleteMessage: chatNotifier.deleteMessage,
+                              onReactionTap: (messageId, emoji) {
+                                chatNotifier.toggleReaction(
+                                  messageId: messageId,
+                                  emoji: emoji,
+                                );
+                              },
+                              onLongPressMessage: (_) {},
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    ChatMessageComposer(
-                      sending: chatState.sending,
-                      onSend: (content) {
-                        chatNotifier.sendMessage(content: content);
-                      },
-                    ),
-                  ],
+                      ChatMessageComposer(
+                        sending: chatState.sending,
+                        onSend: (content) {
+                          chatNotifier.sendMessage(content: content);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -150,18 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   String _resolveFileUrl(String? url) {
-    if (url == null || url.trim().isEmpty) {
-      return '';
-    }
-
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-
-    // Replace this with your existing FileUrlResolver if your project has one:
-    // return ref.read(fileUrlResolverProvider).resolve(url);
-
-    return url;
+    return FileUrlResolver.resolve(url);
   }
 
   void _showReactionPicker({required String messageId}) {

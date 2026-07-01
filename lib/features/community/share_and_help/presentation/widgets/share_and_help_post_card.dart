@@ -481,7 +481,6 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
                   ),
                 ),
               ),
-            
             ],
           ),
           const SizedBox(height: 8),
@@ -650,36 +649,6 @@ class _DiscussionClosedMessage extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 height: 1.4,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ResolvedBadge extends StatelessWidget {
-  const _ResolvedBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFDCFCE7),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 15),
-          SizedBox(width: 4),
-          Text(
-            'Resolved',
-            style: TextStyle(
-              color: Color(0xFF166534),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
             ),
           ),
         ],

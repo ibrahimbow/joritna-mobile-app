@@ -20,4 +20,3 @@ final shareAndHelpPostsProvider = FutureProvider.autoDispose((ref) async {
 
   return repository.getPosts();
 });
-
