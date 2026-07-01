@@ -1,6 +1,6 @@
 import '../../../core/user/current_user.dart';
 
-abstract class AuthRepository {
+abstract interface class AuthRepository {
   Future<void> login({
     required String usernameOrEmail,
     required String password,

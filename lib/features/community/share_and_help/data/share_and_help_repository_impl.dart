@@ -47,4 +47,15 @@ class ShareAndHelpRepositoryImpl implements ShareAndHelpRepository {
   }) {
     return _apiClient.deleteComment(postId: postId, commentId: commentId);
   }
+
+  @override
+Future<ShareAndHelpPost> resolvePost(String postId) {
+  return _apiClient.resolvePost(postId);
+}
+
+@override
+Future<ShareAndHelpPost> reopenPost(String postId) {
+  return _apiClient.reopenPost(postId);
+}
+
 }

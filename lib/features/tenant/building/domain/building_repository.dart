@@ -1,7 +1,7 @@
 import '../data/models/building.dart';
 import '../data/models/requests/join_building_request.dart';
 
-abstract class BuildingRepository {
+abstract interface class BuildingRepository {
   Future<Building> getMyBuilding();
 
   Future<Building> joinBuilding(JoinBuildingRequest request);

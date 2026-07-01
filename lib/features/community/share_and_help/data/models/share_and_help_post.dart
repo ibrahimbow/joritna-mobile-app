@@ -1,4 +1,5 @@
 import 'share_and_help_comment.dart';
+import 'share_and_help_post_status.dart';
 
 class ShareAndHelpPost {
   const ShareAndHelpPost({
@@ -9,6 +10,7 @@ class ShareAndHelpPost {
     required this.title,
     required this.description,
     required this.imageUrl,
+    required this.status,
     required this.createdAt,
     required this.updatedAt,
     required this.comments,
@@ -21,9 +23,12 @@ class ShareAndHelpPost {
   final String title;
   final String description;
   final String? imageUrl;
+  final ShareAndHelpPostStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<ShareAndHelpComment> comments;
+
+  bool get isResolved => status.isResolved;
 
   factory ShareAndHelpPost.fromJson(Map<String, dynamic> json) {
     return ShareAndHelpPost(
@@ -34,6 +39,9 @@ class ShareAndHelpPost {
       title: json['title'] as String,
       description: json['description'] as String,
       imageUrl: json['imageUrl'] as String?,
+      status: ShareAndHelpPostStatus.fromJson(
+        json['status'] as String? ?? 'OPEN',
+      ),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       comments: (json['comments'] as List<dynamic>? ?? [])
@@ -53,6 +61,7 @@ class ShareAndHelpPost {
     String? title,
     String? description,
     String? imageUrl,
+    ShareAndHelpPostStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<ShareAndHelpComment>? comments,
@@ -65,6 +74,7 @@ class ShareAndHelpPost {
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       comments: comments ?? this.comments,

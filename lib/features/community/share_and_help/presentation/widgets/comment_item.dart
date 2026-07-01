@@ -30,12 +30,12 @@ class CommentItem extends StatelessWidget {
         : displayName.trim();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 18,
+            radius: 17,
             backgroundColor: const Color(0xFFE6EFFD),
             backgroundImage: resolvedAvatarUrl.isNotEmpty
                 ? NetworkImage(resolvedAvatarUrl)
@@ -51,10 +51,10 @@ class CommentItem extends StatelessWidget {
                   )
                 : null,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+              padding: const EdgeInsets.fromLTRB(12, 6, 8, 7),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -64,13 +64,12 @@ class CommentItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Wrap(
                           crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 6,
-                          runSpacing: 2,
+                          spacing: 5,
+                          runSpacing: 1,
                           children: [
                             Text(
                               safeDisplayName,
@@ -99,25 +98,25 @@ class CommentItem extends StatelessWidget {
                           visualDensity: VisualDensity.compact,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(
-                            minWidth: 28,
-                            minHeight: 28,
+                            minWidth: 26,
+                            minHeight: 26,
                           ),
                           icon: const Icon(
                             Icons.delete_outline_rounded,
-                            size: 18,
+                            size: 17,
                             color: Color(0xFFDC2626),
                           ),
                           onPressed: onDelete,
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 1),
                   Text(
                     text.trim(),
                     style: const TextStyle(
                       color: Color(0xFF334155),
                       fontSize: 13,
-                      height: 1.35,
+                      height: 1.3,
                     ),
                   ),
                 ],

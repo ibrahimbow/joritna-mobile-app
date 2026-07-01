@@ -2,7 +2,7 @@ import '../data/models/share_and_help_post.dart';
 import '../data/models/requests/add_share_and_help_comment_request.dart';
 import '../data/models/requests/create_share_and_help_post_request.dart';
 
-abstract class ShareAndHelpRepository {
+abstract interface class ShareAndHelpRepository {
   Future<List<ShareAndHelpPost>> getPosts();
 
   Future<ShareAndHelpPost> createPost(CreateShareAndHelpPostRequest request);
@@ -23,4 +23,9 @@ abstract class ShareAndHelpRepository {
     required String postId,
     required String commentId,
   });
+
+  Future<ShareAndHelpPost> resolvePost(String postId);
+
+Future<ShareAndHelpPost> reopenPost(String postId);
+
 }
