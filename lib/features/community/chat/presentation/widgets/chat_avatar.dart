@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/file/file_url_resolver.dart';
+
 class ChatAvatar extends StatelessWidget {
   const ChatAvatar({
     super.key,
@@ -14,9 +16,9 @@ class ChatAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cleanAvatarUrl = avatarUrl?.trim();
+    final resolvedAvatarUrl = FileUrlResolver.resolve(avatarUrl);
 
-    if (cleanAvatarUrl == null || cleanAvatarUrl.isEmpty) {
+    if (resolvedAvatarUrl.isEmpty) {
       return _FallbackAvatar(displayName: displayName, size: size);
     }
 
@@ -25,13 +27,11 @@ class ChatAvatar extends StatelessWidget {
       height: size,
       child: ClipOval(
         child: Image.network(
-          cleanAvatarUrl,
+          resolvedAvatarUrl,
           width: size,
           height: size,
           fit: BoxFit.cover,
-          headers: const {
-            'Accept': 'image/*',
-          },
+          headers: const {'Accept': 'image/*'},
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) {
               return child;
@@ -40,7 +40,7 @@ class ChatAvatar extends StatelessWidget {
             return _FallbackAvatar(displayName: displayName, size: size);
           },
           errorBuilder: (context, error, stackTrace) {
-            debugPrint('Avatar image failed: $cleanAvatarUrl');
+            debugPrint('Avatar image failed: $resolvedAvatarUrl');
             debugPrint('Avatar error: $error');
 
             return _FallbackAvatar(displayName: displayName, size: size);
@@ -52,10 +52,7 @@ class ChatAvatar extends StatelessWidget {
 }
 
 class _FallbackAvatar extends StatelessWidget {
-  const _FallbackAvatar({
-    required this.displayName,
-    required this.size,
-  });
+  const _FallbackAvatar({required this.displayName, required this.size});
 
   final String displayName;
   final double size;

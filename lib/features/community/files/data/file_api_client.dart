@@ -1,16 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'models/uploaded_file_result.dart';
+import '../../../../../core/file/file_type.dart';
+import '../../../../../core/file/uploaded_file.dart';
 
 class FileApiClient {
-  final Dio _dio;
-
   const FileApiClient(this._dio);
 
-  Future<UploadedFileResult> uploadShareAndHelpImage(XFile image) async {
+  final Dio _dio;
+
+  Future<UploadedFile> uploadImage({
+    required XFile image,
+    required FileType type,
+  }) async {
     final formData = FormData.fromMap({
-      'type': 'SHARE_AND_HELP_IMAGE',
+      'type': type.apiValue,
       'file': await MultipartFile.fromFile(image.path, filename: image.name),
     });
 
@@ -19,6 +23,6 @@ class FileApiClient {
       data: formData,
     );
 
-    return UploadedFileResult.fromJson(response.data!);
+    return UploadedFile.fromJson(response.data!);
   }
 }

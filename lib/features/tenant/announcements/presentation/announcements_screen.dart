@@ -26,8 +26,8 @@ class AnnouncementsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               children: const [
                 AnnouncementEmptyState(
-                  title: 'Could not load announcements',
-                  message: 'Please pull down to refresh and try again.',
+                  title: 'No announcements yet',
+                  message: 'There are no announcements for your building yet.',
                   icon: Icons.error_outline_rounded,
                 ),
               ],

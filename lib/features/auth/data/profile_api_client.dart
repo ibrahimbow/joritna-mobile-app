@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-
-import 'models/current_user.dart';
+import '../../../core/user/current_user.dart';
 
 class ProfileApiClient {
   final Dio _dio;

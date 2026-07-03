@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../../tenant/building/data/building_providers.dart';
+import '../../../../core/file/file_type.dart';
+import '../../../../core/file/file_url_resolver.dart';
+import '../../files/data/file_providers.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
+import '../../../tenant/building/data/building_providers.dart';
 import '../data/chat_providers.dart';
 import 'chat_texts.dart';
 import 'state/chat_scroll_controller.dart';
 import 'widgets/chat_connection_status_chip.dart';
 import 'widgets/chat_message_composer.dart';
 import 'widgets/chat_message_list.dart';
-import 'widgets/chat_reaction_picker.dart';
-import '../../../../core/file/file_url_resolver.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -22,6 +24,11 @@ class ChatScreen extends ConsumerStatefulWidget {
 
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   late final ChatScrollController _scrollController;
+
+  final ImagePicker _imagePicker = ImagePicker();
+
+  bool _isUploadingImage = false;
+  XFile? _selectedImage;
 
   String? _initializedBuildingId;
   int? _lastMessageCount;
@@ -36,6 +43,81 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final image = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+
+    if (image == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedImage = image;
+    });
+  }
+
+  void _removeSelectedImage() {
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
+  Future<void> _sendMessage(String content) async {
+    final image = _selectedImage;
+    final trimmedContent = content.trim();
+
+    if (trimmedContent.isEmpty && image == null) {
+      return;
+    }
+
+    setState(() {
+      _isUploadingImage = image != null;
+    });
+
+    try {
+      String? imageUrl;
+
+      if (image != null) {
+        final uploadedFile = await ref
+            .read(fileApiClientProvider)
+            .uploadImage(image: image, type: FileType.chatMessageImage);
+
+        imageUrl = uploadedFile.url;
+      }
+
+      await ref
+          .read(chatStateNotifierProvider.notifier)
+          .sendMessage(content: trimmedContent, imageUrl: imageUrl);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _selectedImage = null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not send message: $error'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
+      }
+    }
   }
 
   @override
@@ -120,25 +202,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           size: 22,
                         ),
                       ),
+
                       const SizedBox(width: 12),
+
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              ChatTexts.title,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF0F172A),
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            ChatConnectionStatusChip(
-                              status: chatState.connectionStatus,
-                            ),
-                          ],
+                        child: Text(
+                          ChatTexts.title,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
                         ),
+                      ),
+
+                      ChatConnectionStatusChip(
+                        status: chatState.connectionStatus,
                       ),
                     ],
                   ),
@@ -177,10 +256,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                       ),
                       ChatMessageComposer(
-                        sending: chatState.sending,
-                        onSend: (content) {
-                          chatNotifier.sendMessage(content: content);
-                        },
+                        sending: chatState.sending || _isUploadingImage,
+                        selectedImage: _selectedImage,
+                        onSend: _sendMessage,
+                        onPickImage: _pickImage,
+                        onRemoveImage: _removeSelectedImage,
                       ),
                     ],
                   ),
@@ -196,32 +276,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   String _resolveFileUrl(String? url) {
     return FileUrlResolver.resolve(url);
   }
-
-  void _showReactionPicker({required String messageId}) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Center(
-              heightFactor: 1,
-              child: ChatReactionPicker(
-                onReactionSelected: (emoji) {
-                  Navigator.of(context).pop();
-
-                  ref
-                      .read(chatStateNotifierProvider.notifier)
-                      .toggleReaction(messageId: messageId, emoji: emoji);
-                },
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
 class _ChatPageScaffold extends StatelessWidget {
@@ -231,12 +285,9 @@ class _ChatPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppShell(
-      selectedIndex: 3,
-      child: Scaffold(
-        appBar: AppBar(title: const Text(ChatTexts.title)),
-        body: body,
-      ),
+    return Scaffold(
+      appBar: AppBar(title: const Text(ChatTexts.title)),
+      body: body,
     );
   }
 }

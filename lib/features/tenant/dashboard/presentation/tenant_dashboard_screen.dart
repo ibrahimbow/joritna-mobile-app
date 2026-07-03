@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/user/current_user_provider.dart';
 
-import '../../../auth/data/current_user_provider.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
 import 'widgets/dashboard_grid.dart';
 import 'widgets/dashboard_header.dart';

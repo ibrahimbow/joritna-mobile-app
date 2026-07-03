@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 
-import 'models/login_request.dart';
+import 'models/requests/login_request.dart';
 import 'models/login_response.dart';
 
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/user/current_user.dart';
+import 'models/requests/register_request.dart';
+import 'models/register_response.dart';
 
 class AuthApiClient {
   const AuthApiClient(this._dio);
@@ -40,5 +42,14 @@ class AuthApiClient {
     }
 
     return CurrentUser.fromJson(data);
+  }
+
+  Future<RegisterResponse> register(RegisterRequest request) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.authRegister,
+      data: request.toJson(),
+    );
+
+    return RegisterResponse.fromJson(response.data ?? {});
   }
 }

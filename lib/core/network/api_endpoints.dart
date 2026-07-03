@@ -1,21 +1,16 @@
 class ApiEndpoints {
   const ApiEndpoints._();
 
-  // Auth
-  static const authLogin = '/auth/login';
-  static const authProfile = '/auth/profile';
+  // Authentication
+  static const String authLogin = '/auth/login';
+  static const String authRegister = '/auth/register';
+  static const String authProfile = '/auth/profile';
+  static const String authChangePassword = '/auth/change-password';
 
-  static const changePassword = '/auth/change-password';
-
-  // Share & Help
-  static const tenantShareAndHelpPosts = '/tenant/share-and-help/posts';
-
-  // Announcements
-  static const tenantAnnouncements = '/tenant/announcements';
-
-  //change the password
-  static const authChangePassword = '/auth/change-password';
+  // Tenant
+  static const String tenantAnnouncements = '/tenant/announcements';
+  static const String tenantShareAndHelpPosts = '/tenant/share-and-help/posts';
 
   // Files
-  static const fileUpload = '/files/upload';
+  static const String fileUpload = '/files/upload';
 }

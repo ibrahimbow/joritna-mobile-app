@@ -7,6 +7,11 @@ import '../../../auth/data/auth_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
 import 'widgets/change_password_sheet.dart';
 
+import '../../../tenant/building/data/building_providers.dart';
+import '../../../community/chat/data/chat_providers.dart';
+import '../../../profile/data/profile_providers.dart';
+import '../../../auth/data/auth_state_provider.dart';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -37,6 +42,11 @@ class SettingsScreen extends ConsumerWidget {
 
     await ref.read(authRepositoryProvider).logout();
 
+    ref.invalidate(authStateProvider);
+    ref.invalidate(profileProvider);
+    ref.invalidate(myBuildingProvider);
+    ref.invalidate(chatStateNotifierProvider);
+
     if (!context.mounted) {
       return;
     }
@@ -46,67 +56,89 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AppShell(
-      selectedIndex: 0,
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const Text(
-              'Settings',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
+    final buildingState = ref.watch(myBuildingProvider);
 
-            _SettingsTile(
-              icon: Icons.person_outline_rounded,
-              title: 'Profile',
-              subtitle: 'Update your personal information',
-              onTap: () => context.push(AppRoutes.profile),
-            ),
+    final content = SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          const Text(
+            'Settings',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
 
-            _SettingsTile(
-              icon: Icons.lock_outline_rounded,
-              title: 'Change Password',
-              subtitle: 'Update your password',
-              onTap: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  builder: (_) => const ChangePasswordSheet(),
-                );
-              },
-            ),
+          _SettingsTile(
+            icon: Icons.person_outline_rounded,
+            title: 'Profile',
+            subtitle: 'Update your personal information',
+            onTap: () => context.push(AppRoutes.profile),
+          ),
 
-            _SettingsTile(
-              icon: Icons.language_rounded,
-              title: 'Language',
-              subtitle: 'English',
-              onTap: () {},
-            ),
+          _SettingsTile(
+            icon: Icons.lock_outline_rounded,
+            title: 'Change Password',
+            subtitle: 'Update your password',
+            onTap: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                builder: (_) => const ChangePasswordSheet(),
+              );
+            },
+          ),
 
-            _SettingsTile(
-              icon: Icons.notifications_none_rounded,
-              title: 'Notifications',
-              subtitle: 'Manage notification preferences',
-              onTap: () {},
-            ),
+          _SettingsTile(
+            icon: Icons.language_rounded,
+            title: 'Language',
+            subtitle: 'English',
+            onTap: () {},
+          ),
 
-            const SizedBox(height: 30),
+          _SettingsTile(
+            icon: Icons.notifications_none_rounded,
+            title: 'Notifications',
+            subtitle: 'Manage notification preferences',
+            onTap: () {},
+          ),
+
+          if (buildingState.hasError) ...[
+            const SizedBox(height: 12),
 
             FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.red,
                 minimumSize: const Size.fromHeight(52),
               ),
-              onPressed: () => _logout(context, ref),
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+              onPressed: () => context.go(AppRoutes.tenantBuilding),
+              icon: const Icon(Icons.apartment_rounded),
+              label: const Text('Join Building'),
             ),
+
+            const SizedBox(height: 20),
           ],
-        ),
+
+          const SizedBox(height: 30),
+
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              minimumSize: const Size.fromHeight(52),
+            ),
+            onPressed: () => _logout(context, ref),
+            icon: const Icon(Icons.logout),
+            label: const Text('Logout'),
+          ),
+        ],
       ),
+    );
+
+    return buildingState.when(
+      loading: () => const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      ),
+      error: (_, __) => Scaffold(body: content),
+      data: (_) => AppShell(selectedIndex: 0, child: content),
     );
   }
 }

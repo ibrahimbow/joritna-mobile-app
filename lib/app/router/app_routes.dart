@@ -1,16 +1,17 @@
 class AppRoutes {
   const AppRoutes._();
 
-  static const splash = '/';
+  static const String splash = '/';
 
-  static const login = '/login';
+  static const String login = '/login';
+  static const String register = '/register';
 
-  static const tenantDashboard = '/tenant/dashboard';
-  static const tenantBuilding = '/tenant/building';
-  static const tenantAnnouncements = '/tenant/announcements';
-  static const tenantChat = '/tenant/chat';
-  static const tenantShareAndHelp = '/tenant/share-and-help';
-  static const tenantCreatePost = '/tenant/share-and-help/create';
-  static const tenantSettings = '/tenant/settings';
-  static const profile = '/tenant/profile';
+  static const String tenantDashboard = '/tenant/dashboard';
+  static const String tenantBuilding = '/tenant/building';
+  static const String tenantAnnouncements = '/tenant/announcements';
+  static const String tenantChat = '/tenant/chat';
+  static const String tenantShareAndHelp = '/tenant/share-and-help';
+  static const String tenantCreatePost = '/tenant/share-and-help/create';
+  static const String tenantSettings = '/tenant/settings';
+  static const String profile = '/tenant/profile';
 }

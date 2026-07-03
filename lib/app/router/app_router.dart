@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/auth_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/community/chat/presentation/chat_screen.dart';
 import '../../features/community/share_and_help/data/models/share_and_help_post.dart';
@@ -23,16 +23,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       final isSplashRoute = state.matchedLocation == AppRoutes.splash;
       final isLoginRoute = state.matchedLocation == AppRoutes.login;
+      final isRegisterRoute = state.matchedLocation == AppRoutes.register;
 
       if (isSplashRoute) {
         return null;
       }
 
-      if (!isAuthenticated && !isLoginRoute) {
+      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute) {
         return AppRoutes.login;
       }
 
-      if (isAuthenticated && isLoginRoute) {
+      if (isAuthenticated && (isLoginRoute || isRegisterRoute)) {
         return AppRoutes.tenantDashboard;
       }
 
@@ -45,7 +46,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) =>
+            const AuthScreen(initialMode: AuthMode.login),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (context, state) =>
+            const AuthScreen(initialMode: AuthMode.register),
       ),
       GoRoute(
         path: AppRoutes.tenantDashboard,

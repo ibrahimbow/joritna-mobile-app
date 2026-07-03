@@ -12,6 +12,7 @@ import '../../../shared/presentation/layout/app_shell.dart';
 import '../data/models/requests/create_share_and_help_post_request.dart';
 import '../data/models/share_and_help_post.dart';
 import '../data/share_and_help_providers.dart';
+import '../../../../../core/file/file_type.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key, this.postToEdit});
@@ -75,7 +76,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     try {
       final uploadedFile = await ref
           .read(fileApiClientProvider)
-          .uploadShareAndHelpImage(image);
+          .uploadImage(image: image, type: FileType.shareAndHelpImage);
 
       if (!mounted) {
         return;

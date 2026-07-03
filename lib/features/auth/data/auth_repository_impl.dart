@@ -1,9 +1,10 @@
-import '../domain/auth_repository.dart';
 import '../../../../core/storage/token_storage.dart';
-
-import 'auth_api_client.dart';
-import 'models/login_request.dart';
 import '../../../core/user/current_user.dart';
+import '../domain/auth_repository.dart';
+import 'auth_api_client.dart';
+import 'models/requests/login_request.dart';
+import 'models/requests/register_request.dart';
+import 'models/register_response.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl(this._authApiClient, this._tokenStorage);
@@ -12,17 +13,17 @@ class AuthRepositoryImpl implements AuthRepository {
   final TokenStorage _tokenStorage;
 
   @override
-  Future<void> login({
-    required String usernameOrEmail,
-    required String password,
-  }) async {
+  Future<void> login(LoginRequest request) async {
     await _tokenStorage.clearTokens();
 
-    final response = await _authApiClient.login(
-      LoginRequest(usernameOrEmail: usernameOrEmail, password: password),
-    );
+    final response = await _authApiClient.login(request);
 
     await _tokenStorage.saveAccessToken(response.accessToken);
+  }
+
+  @override
+  Future<RegisterResponse> register(RegisterRequest request) {
+    return _authApiClient.register(request);
   }
 
   @override

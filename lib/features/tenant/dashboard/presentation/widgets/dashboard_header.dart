@@ -13,11 +13,13 @@ class DashboardHeader extends ConsumerWidget {
     required this.displayName,
     required this.role,
     required this.avatarUrl,
+    this.showSettingsButton = true,
   });
 
   final String displayName;
   final String role;
   final String? avatarUrl;
+  final bool showSettingsButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -126,11 +128,12 @@ class DashboardHeader extends ConsumerWidget {
                   ],
                 ),
               ),
-              IconButton(
-                tooltip: 'Settings',
-                onPressed: () => context.go(AppRoutes.tenantSettings),
-                icon: const Icon(Icons.settings_rounded, color: Colors.white),
-              ),
+              if (showSettingsButton)
+                IconButton(
+                  tooltip: 'Settings',
+                  onPressed: () => context.go(AppRoutes.tenantSettings),
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white),
+                ),
             ],
           ),
         ],
