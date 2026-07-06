@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/user/current_user_provider.dart';
 import '../widgets/joritna_bottom_navigation_bar.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   final Widget child;
   final int selectedIndex;
   final Color backgroundColor;
@@ -15,16 +17,24 @@ class AppShell extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUserState = ref.watch(currentUserProvider);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: child,
-      bottomNavigationBar: Container(
-        color: Colors.white,
-        child: SafeArea(
-          top: false,
-          child: JoritnaBottomNavigationBar(selectedIndex: selectedIndex),
-        ),
+      bottomNavigationBar: currentUserState.when(
+        loading: () => const SizedBox(height: 72),
+        error: (_, __) => const SizedBox(height: 72),
+        data: (user) {
+          return SafeArea(
+            top: false,
+            child: JoritnaBottomNavigationBar(
+              selectedIndex: selectedIndex,
+              role: user.role,
+            ),
+          );
+        },
       ),
     );
   }

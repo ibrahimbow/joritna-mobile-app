@@ -7,7 +7,7 @@ import '../../../../core/file/file_url_resolver.dart';
 import '../../files/data/file_providers.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
-import '../../../tenant/building/data/building_providers.dart';
+import '../data/chat_building_provider.dart';
 import '../data/chat_providers.dart';
 import 'chat_texts.dart';
 import 'state/chat_scroll_controller.dart';
@@ -51,9 +51,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       imageQuality: 85,
     );
 
-    if (image == null) {
-      return;
-    }
+    if (image == null) return;
 
     setState(() {
       _selectedImage = image;
@@ -70,9 +68,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final image = _selectedImage;
     final trimmedContent = content.trim();
 
-    if (trimmedContent.isEmpty && image == null) {
-      return;
-    }
+    if (trimmedContent.isEmpty && image == null) return;
 
     setState(() {
       _isUploadingImage = image != null;
@@ -93,17 +89,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .read(chatStateNotifierProvider.notifier)
           .sendMessage(content: trimmedContent, imageUrl: imageUrl);
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         _selectedImage = null;
       });
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -122,7 +114,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final buildingState = ref.watch(myBuildingProvider);
+    final buildingState = ref.watch(chatBuildingProvider);
     final profileState = ref.watch(profileProvider);
     final chatState = ref.watch(chatStateNotifierProvider);
     final chatNotifier = ref.read(chatStateNotifierProvider.notifier);
@@ -170,6 +162,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 _initializedBuildingId = buildingId;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+
                   chatNotifier.initialize(
                     buildingId: buildingId,
                     currentUserId: currentUserId,
@@ -202,20 +196,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           size: 22,
                         ),
                       ),
-
                       const SizedBox(width: 12),
-
                       Expanded(
                         child: Text(
                           ChatTexts.title,
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0F172A),
+                                color: Color(0xFF0F172A),
                               ),
                         ),
                       ),
-
                       ChatConnectionStatusChip(
                         status: chatState.connectionStatus,
                       ),

@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../app/router/app_routes.dart';
 import '../../../../../core/file/file_url_resolver.dart';
+import '../../../../../core/user/user_role.dart';
 import '../../../../profile/data/profile_providers.dart';
-import '../tenant_dashboard_screen.dart';
+import '../../../../tenant/dashboard/presentation/tenant_dashboard_screen.dart';
 
 class DashboardHeader extends ConsumerWidget {
   const DashboardHeader({
@@ -17,7 +18,7 @@ class DashboardHeader extends ConsumerWidget {
   });
 
   final String displayName;
-  final String role;
+  final UserRole role;
   final String? avatarUrl;
   final bool showSettingsButton;
 
@@ -116,7 +117,7 @@ class DashboardHeader extends ConsumerWidget {
                         ),
                       ),
                       child: Text(
-                        role.toUpperCase(),
+                        role.name.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -131,7 +132,7 @@ class DashboardHeader extends ConsumerWidget {
               if (showSettingsButton)
                 IconButton(
                   tooltip: 'Settings',
-                  onPressed: () => context.go(AppRoutes.tenantSettings),
+                  onPressed: () => context.go(_settingsRouteFor(role)),
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
                 ),
             ],
@@ -139,6 +140,14 @@ class DashboardHeader extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _settingsRouteFor(UserRole role) {
+    return switch (role) {
+      UserRole.manager => AppRoutes.managerSettings,
+      UserRole.tenant => AppRoutes.tenantSettings,
+      UserRole.admin => AppRoutes.login,
+    };
   }
 }
 

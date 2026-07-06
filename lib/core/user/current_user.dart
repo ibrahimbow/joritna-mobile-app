@@ -1,3 +1,5 @@
+import 'user_role.dart';
+
 class CurrentUser {
   const CurrentUser({
     required this.id,
@@ -16,7 +18,7 @@ class CurrentUser {
   final String email;
   final String displayName;
   final String phoneNumber;
-  final String role;
+  final UserRole role;
   final String preferredLanguage;
   final bool notificationsEnabled;
   final String? avatarUrl;
@@ -25,12 +27,12 @@ class CurrentUser {
 
   factory CurrentUser.fromJson(Map<String, dynamic> json) {
     return CurrentUser(
-      id: (json['id'] ?? json['userId'] as num).toInt(),
+      id: ((json['id'] ?? json['userId']) as num).toInt(),
       username: json['username'] as String? ?? '',
-      email: json['email'] as String,
-      displayName: json['displayName'] as String,
+      email: json['email'] as String? ?? '',
+      displayName: json['displayName'] as String? ?? '',
       phoneNumber: json['phoneNumber'] as String? ?? '',
-      role: json['role'] as String,
+      role: UserRole.from(json['role'] as String? ?? 'TENANT'),
       preferredLanguage: json['preferredLanguage'] as String? ?? 'EN',
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
       avatarUrl: json['avatarUrl'] as String?,
@@ -43,7 +45,7 @@ class CurrentUser {
     String? email,
     String? displayName,
     String? phoneNumber,
-    String? role,
+    UserRole? role,
     String? preferredLanguage,
     bool? notificationsEnabled,
     String? avatarUrl,

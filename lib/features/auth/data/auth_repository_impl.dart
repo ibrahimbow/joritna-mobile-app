@@ -5,6 +5,7 @@ import 'auth_api_client.dart';
 import 'models/requests/login_request.dart';
 import 'models/requests/register_request.dart';
 import 'models/register_response.dart';
+import '../../../core/errors/failure_mapper.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl(this._authApiClient, this._tokenStorage);
@@ -14,25 +15,53 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> login(LoginRequest request) async {
-    await _tokenStorage.clearTokens();
+    try {
+      await _tokenStorage.clearTokens();
 
-    final response = await _authApiClient.login(request);
+      final response = await _authApiClient.login(request);
 
-    await _tokenStorage.saveAccessToken(response.accessToken);
+      await _tokenStorage.saveAccessToken(response.accessToken);
+    } catch (error) {
+      throw FailureMapper.map(
+        error,
+        fallbackMessage: 'Unable to login. Please try again.',
+      );
+    }
   }
 
   @override
-  Future<RegisterResponse> register(RegisterRequest request) {
-    return _authApiClient.register(request);
+  Future<RegisterResponse> register(RegisterRequest request) async {
+    try {
+      return await _authApiClient.register(request);
+    } catch (error) {
+      throw FailureMapper.map(
+        error,
+        fallbackMessage: 'Unable to register. Please try again.',
+      );
+    }
   }
 
   @override
-  Future<CurrentUser> getProfile() {
-    return _authApiClient.getProfile();
+  Future<CurrentUser> getProfile() async {
+    try {
+      return await _authApiClient.getProfile();
+    } catch (error) {
+      throw FailureMapper.map(
+        error,
+        fallbackMessage: 'Unable to load your profile.',
+      );
+    }
   }
 
   @override
   Future<void> logout() async {
-    await _tokenStorage.clearTokens();
+    try {
+      await _tokenStorage.clearTokens();
+    } catch (error) {
+      throw FailureMapper.map(
+        error,
+        fallbackMessage: 'Unable to logout. Please try again.',
+      );
+    }
   }
 }

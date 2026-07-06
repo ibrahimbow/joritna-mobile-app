@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../app/router/app_routes.dart';
+import '../../../../../core/user/current_user_provider.dart';
+import '../../../../../core/user/user_role.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
 import '../data/share_and_help_providers.dart';
 import 'widgets/share_and_help_header.dart';
@@ -16,6 +18,7 @@ class ShareAndHelpScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postsState = ref.watch(shareAndHelpPostsProvider);
+    final currentUserState = ref.watch(currentUserProvider);
 
     return AppShell(
       selectedIndex: 4,
@@ -66,14 +69,33 @@ class ShareAndHelpScreen extends ConsumerWidget {
               top: 0,
               left: 0,
               right: 0,
-              child: ShareAndHelpHeader(
-                onCreatePost: () => context.go(AppRoutes.tenantCreatePost),
+              child: currentUserState.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => ShareAndHelpHeader(
+                  onCreatePost: () => context.go(AppRoutes.tenantCreatePost),
+                ),
+                data: (user) => ShareAndHelpHeader(
+                  onCreatePost: () {
+                    final route = _createPostRouteForRole(user.role);
+                    context.push(route);
+                  },
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _createPostRouteForRole(UserRole role) {
+    switch (role) {
+      case UserRole.manager:
+      case UserRole.admin:
+        return AppRoutes.managerCreatePost;
+      case UserRole.tenant:
+        return AppRoutes.tenantCreatePost;
+    }
   }
 }
 
@@ -82,11 +104,11 @@ class _ShareAndHelpEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(
             Icons.volunteer_activism_outlined,
             size: 42,

@@ -34,12 +34,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       if (!mounted) return;
 
-      final role = currentUser.role.toUpperCase();
-
-      if (role == 'ADMIN') {
-        context.go('/admin/dashboard');
-        return;
-      }
+      final role = currentUser.role.name.toUpperCase();
 
       if (role == 'MANAGER') {
         context.go('/manager/dashboard');

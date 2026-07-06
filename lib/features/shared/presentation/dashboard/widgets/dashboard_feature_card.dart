@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../tenant_dashboard_screen.dart';
+import '../../../../tenant/dashboard/presentation/tenant_dashboard_screen.dart';
 import 'notification_badge.dart';
 
 class DashboardCard extends StatelessWidget {

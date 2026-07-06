@@ -6,11 +6,12 @@ import '../../models/requests/react_to_chat_message_request.dart';
 import '../../models/requests/send_chat_message_request.dart';
 
 class ChatApiClient {
-  const ChatApiClient(this._dio);
+  const ChatApiClient({required Dio dio, required String basePath})
+    : _dio = dio,
+      _basePath = basePath;
 
   final Dio _dio;
-
-  static const String _basePath = '/tenant/chat/messages';
+  final String _basePath;
 
   Future<List<ChatMessage>> getMessages() async {
     final response = await _dio.get<List<dynamic>>(_basePath);

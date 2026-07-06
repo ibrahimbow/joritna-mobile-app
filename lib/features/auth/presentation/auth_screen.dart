@@ -8,6 +8,9 @@ import '../data/auth_providers.dart';
 import '../data/models/requests/login_request.dart';
 import '../data/models/requests/register_request.dart';
 import '../../../core/errors/failure.dart';
+import '../../../core/errors/api_failure.dart';
+import '../../../core/user/current_user_provider.dart';
+import '../../../core/user/user_role.dart';
 
 enum AuthMode { login, register }
 
@@ -107,26 +110,82 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _login() async {
-    await ref
-        .read(authRepositoryProvider)
-        .login(
-          LoginRequest(
-            usernameOrEmail: _usernameOrEmailController.text.trim(),
-            password: _passwordController.text,
-          ),
-        );
+    FocusScope.of(context).unfocus();
 
-    final hasBuilding = await ref
-        .read(buildingRepositoryProvider)
-        .hasMyBuilding();
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (!mounted) {
-      return;
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .login(
+            LoginRequest(
+              usernameOrEmail: _usernameOrEmailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          );
+
+      ref.invalidate(currentUserProvider);
+
+      final currentUser = await ref.read(currentUserProvider.future);
+
+      if (!mounted) {
+        return;
+      }
+
+      switch (currentUser.role) {
+        case UserRole.manager:
+          context.go(AppRoutes.managerDashboard);
+          return;
+
+        case UserRole.tenant:
+          final hasBuilding = await ref
+              .read(buildingRepositoryProvider)
+              .hasMyBuilding();
+
+          if (!mounted) {
+            return;
+          }
+
+          context.go(
+            hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
+          );
+          return;
+
+        default:
+          throw const ApiFailure(
+            message: 'This account type is not supported in the mobile app.',
+          );
+      }
+    } on ApiFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message)));
+    } catch (error, stackTrace) {
+      debugPrint('LOGIN FAILED: $error');
+      debugPrint('LOGIN STACKTRACE: $stackTrace');
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Something went wrong. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-
-    context.go(
-      hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
-    );
   }
 
   Future<void> _register() async {

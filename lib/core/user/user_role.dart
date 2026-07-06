@@ -16,6 +16,14 @@ enum UserRole {
     }
   }
 
+  String get displayName {
+    return switch (this) {
+      UserRole.admin => 'ADMIN',
+      UserRole.manager => 'MANAGER',
+      UserRole.tenant => 'TENANT',
+    };
+  }
+
   bool get isAdmin => this == UserRole.admin;
 
   bool get isManager => this == UserRole.manager;

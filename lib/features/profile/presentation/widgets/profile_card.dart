@@ -77,7 +77,7 @@ class ProfileCard extends StatelessWidget {
             ProfileInfoTile(
               icon: Icons.verified_user_outlined,
               label: 'Role',
-              value: profile.role,
+              value: profile.role.displayName,
             ),
             const SizedBox(height: 24),
             SizedBox(

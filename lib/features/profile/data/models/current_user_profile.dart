@@ -1,3 +1,5 @@
+import 'package:joritna_mobile/core/user/user_role.dart';
+
 class CurrentUserProfile {
   const CurrentUserProfile({
     required this.id,
@@ -19,7 +21,7 @@ class CurrentUserProfile {
   final String? avatarUrl;
   final String preferredLanguage;
   final bool notificationsEnabled;
-  final String role;
+  final UserRole role;
 
   factory CurrentUserProfile.fromJson(Map<String, dynamic> json) {
     return CurrentUserProfile(
@@ -31,7 +33,7 @@ class CurrentUserProfile {
       avatarUrl: json['avatarUrl'] as String?,
       preferredLanguage: json['preferredLanguage'] as String? ?? 'EN',
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-      role: json['role'] as String,
+      role: UserRole.from(json['role'] as String),
     );
   }
 }

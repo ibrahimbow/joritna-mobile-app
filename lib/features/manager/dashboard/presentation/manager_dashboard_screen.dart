@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:joritna_mobile/core/user/user_role.dart';
+
 import '../../../../core/user/current_user_provider.dart';
-
-import '../../../../core/user/user_role.dart';
-import '../../../shared/presentation/layout/app_shell.dart';
 import '../../../shared/presentation/dashboard/widgets/dashboard_header.dart';
-import '../../../shared/presentation/dashboard/widgets/dashboard_grid.dart';
+import '../../../shared/presentation/layout/app_shell.dart';
+import 'manager_dashboard_content.dart';
 
-class TenantDashboardScreen extends ConsumerWidget {
-  const TenantDashboardScreen({super.key});
+class ManagerDashboardScreen extends ConsumerWidget {
+  const ManagerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,24 +16,27 @@ class TenantDashboardScreen extends ConsumerWidget {
 
     return AppShell(
       selectedIndex: 0,
-      backgroundColor: DashboardTheme.primaryBlue,
+      backgroundColor: ManagerDashboardTheme.primaryBlue,
       child: currentUserState.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+        loading: () {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        },
         error: (error, stackTrace) {
-          debugPrint('DASHBOARD USER ERROR: $error');
-          debugPrint('DASHBOARD USER STACKTRACE: $stackTrace');
+          debugPrint('MANAGER DASHBOARD USER ERROR: $error');
+          debugPrint('MANAGER DASHBOARD USER STACKTRACE: $stackTrace');
 
           return const SafeArea(
             bottom: false,
             child: Column(
               children: [
                 DashboardHeader(
-                  displayName: 'Joritna User',
-                  role: UserRole.tenant,
+                  displayName: 'Joritna Manager',
+                  role: UserRole.manager,
                   avatarUrl: null,
                 ),
-                Expanded(child: DashboardGrid()),
+                Expanded(child: ManagerDashboardContent(totalTenants: 0)),
               ],
             ),
           );
@@ -48,7 +51,7 @@ class TenantDashboardScreen extends ConsumerWidget {
                   role: user.role,
                   avatarUrl: user.avatarUrl,
                 ),
-                const Expanded(child: DashboardGrid()),
+                const Expanded(child: ManagerDashboardContent(totalTenants: 0)),
               ],
             ),
           );
@@ -58,8 +61,8 @@ class TenantDashboardScreen extends ConsumerWidget {
   }
 }
 
-class DashboardTheme {
-  const DashboardTheme._();
+class ManagerDashboardTheme {
+  const ManagerDashboardTheme._();
 
   static const Color primaryBlue = Color(0xFF0057C8);
   static const Color deepBlue = Color(0xFF003B9E);

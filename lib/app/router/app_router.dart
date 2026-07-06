@@ -7,11 +7,15 @@ import '../../features/community/chat/presentation/chat_screen.dart';
 import '../../features/community/share_and_help/data/models/share_and_help_post.dart';
 import '../../features/community/share_and_help/presentation/create_post_screen.dart';
 import '../../features/community/share_and_help/presentation/share_and_help_screen.dart';
+import '../../features/manager/announcements/presentation/manager_announcements_screen.dart';
+import '../../features/manager/building/presentation/manager_building_screen.dart';
+import '../../features/manager/dashboard/presentation/manager_dashboard_screen.dart';
+import '../../features/manager/tenants/presentation/manager_tenants_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/tenant/announcements/presentation/announcements_screen.dart';
 import '../../features/tenant/building/presentation/building_screen.dart';
 import '../../features/tenant/dashboard/presentation/tenant_dashboard_screen.dart';
-import '../../features/tenant/settings/presentation/settings_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/shared/presentation/settings/settings_screen.dart';
 import 'app_routes.dart';
 import 'route_guards.dart';
 
@@ -20,21 +24,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     redirect: (context, state) async {
       final isAuthenticated = await RouteGuards.isAuthenticated(ref);
+      final currentRole = await RouteGuards.currentUserRole(ref);
 
-      final isSplashRoute = state.matchedLocation == AppRoutes.splash;
-      final isLoginRoute = state.matchedLocation == AppRoutes.login;
-      final isRegisterRoute = state.matchedLocation == AppRoutes.register;
+      final location = state.matchedLocation;
+
+      final isSplashRoute = location == AppRoutes.splash;
+      final isLoginRoute = location == AppRoutes.login;
+      final isRegisterRoute = location == AppRoutes.register;
+      final isAuthRoute = isLoginRoute || isRegisterRoute;
 
       if (isSplashRoute) {
         return null;
       }
 
-      if (!isAuthenticated && !isLoginRoute && !isRegisterRoute) {
+      if (!isAuthenticated && !isAuthRoute) {
         return AppRoutes.login;
       }
 
-      if (isAuthenticated && (isLoginRoute || isRegisterRoute)) {
-        return AppRoutes.tenantDashboard;
+      if (isAuthenticated && isAuthRoute) {
+        return AppRoutes.dashboardForRole(currentRole ?? '');
+      }
+
+      if (AppRoutes.isTenantRoute(location) &&
+          currentRole?.toUpperCase() != 'TENANT') {
+        return AppRoutes.dashboardForRole(currentRole ?? '');
+      }
+
+      if (AppRoutes.isManagerRoute(location) &&
+          currentRole?.toUpperCase() != 'MANAGER') {
+        return AppRoutes.dashboardForRole(currentRole ?? '');
       }
 
       return null;
@@ -46,14 +64,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) =>
-            const AuthScreen(initialMode: AuthMode.login),
+        builder: (context, state) {
+          return const AuthScreen(initialMode: AuthMode.login);
+        },
       ),
       GoRoute(
         path: AppRoutes.register,
-        builder: (context, state) =>
-            const AuthScreen(initialMode: AuthMode.register),
+        builder: (context, state) {
+          return const AuthScreen(initialMode: AuthMode.register);
+        },
       ),
+
+      // Tenant routes
       GoRoute(
         path: AppRoutes.tenantDashboard,
         builder: (context, state) => const TenantDashboardScreen(),
@@ -88,6 +110,48 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.tenantSettings,
         builder: (context, state) => const SettingsScreen(),
       ),
+
+      // Manager routes
+      GoRoute(
+        path: AppRoutes.managerDashboard,
+        builder: (context, state) => const ManagerDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerTenants,
+        builder: (context, state) => const ManagerTenantsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerBuilding,
+        builder: (context, state) => const ManagerBuildingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerAnnouncements,
+        builder: (context, state) => const ManagerAnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerChat,
+        builder: (context, state) => const ChatScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerShareAndHelp,
+        builder: (context, state) => const ShareAndHelpScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerCreatePost,
+        builder: (context, state) {
+          final post = state.extra is ShareAndHelpPost
+              ? state.extra as ShareAndHelpPost
+              : null;
+
+          return CreatePostScreen(postToEdit: post);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.managerSettings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+
+      // Shared routes
       GoRoute(
         path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:joritna_mobile/core/user/user_role.dart';
 
 import '../../../../core/errors/failure.dart';
 import '../../../profile/data/profile_providers.dart';
+import '../../../shared/presentation/dashboard/widgets/dashboard_header.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
-import '../../dashboard/presentation/widgets/dashboard_header.dart';
 import '../data/building_providers.dart';
 import '../data/models/requests/join_building_request.dart';
 import 'widgets/building_action_card.dart';
@@ -129,7 +130,7 @@ class _JoinBuildingViewState extends ConsumerState<_JoinBuildingView> {
       error: (_, __) => Scaffold(
         body: _JoinBuildingContent(
           displayName: 'Resident',
-          role: 'TENANT',
+          role: UserRole.tenant,
           avatarUrl: null,
           codeController: _codeController,
           isSubmitting: _isSubmitting,
@@ -207,7 +208,7 @@ class _JoinBuildingContent extends StatelessWidget {
   });
 
   final String displayName;
-  final String role;
+  final UserRole role;
   final String? avatarUrl;
   final TextEditingController codeController;
   final bool isSubmitting;
@@ -234,30 +235,7 @@ class _JoinBuildingContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.info_outline_rounded, color: _officialBlue),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'You are not currently part of a building. Join your building to access announcements, chat, and Share & Help.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            height: 1.45,
-                            color: Color(0xFF334155),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _InformationBox(),
                 const SizedBox(height: 24),
                 const Text(
                   'Join your building',
@@ -281,7 +259,11 @@ class _JoinBuildingContent extends StatelessWidget {
                   controller: codeController,
                   textCapitalization: TextCapitalization.characters,
                   textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => isSubmitting ? null : onJoinBuilding(),
+                  onSubmitted: (_) {
+                    if (!isSubmitting) {
+                      onJoinBuilding();
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'Building code',
                     hintText: 'Example: BM-1234',
@@ -306,23 +288,7 @@ class _JoinBuildingContent extends StatelessWidget {
                 ),
                 if (errorMessage != null) ...[
                   const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.error.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  _ErrorBox(message: errorMessage!),
                 ],
                 const SizedBox(height: 18),
                 SizedBox(
@@ -356,6 +322,65 @@ class _JoinBuildingContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _InformationBox extends StatelessWidget {
+  const _InformationBox();
+
+  static const Color _officialBlue = Color(0xFF2563EB);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.info_outline_rounded, color: _officialBlue),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'You are not currently part of a building. Join your building to access announcements, chat, and Share & Help.',
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: Color(0xFF334155),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBox extends StatelessWidget {
+  const _ErrorBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.error,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
