@@ -98,7 +98,7 @@ class DashboardHeader extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: isSmall ? 26 : 32,
+                        fontSize: isSmall ? 14 : 20,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                       ),

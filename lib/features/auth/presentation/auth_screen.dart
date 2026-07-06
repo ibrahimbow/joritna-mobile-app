@@ -7,10 +7,11 @@ import '../../tenant/building/data/building_providers.dart';
 import '../data/auth_providers.dart';
 import '../data/models/requests/login_request.dart';
 import '../data/models/requests/register_request.dart';
-import '../../../core/errors/failure.dart';
+
 import '../../../core/errors/api_failure.dart';
 import '../../../core/user/current_user_provider.dart';
 import '../../../core/user/user_role.dart';
+import '../../../core/errors/failure_mapper.dart';
 
 enum AuthMode { login, register }
 
@@ -33,9 +34,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _phoneNumberController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   Map<String, String> _fieldErrors = const {};
 
   late AuthMode _mode;
+
+  UserRole _selectedRegisterRole = UserRole.tenant;
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -90,7 +94,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         return;
       }
 
-      final failure = Failure.fromException(
+      final failure = FailureMapper.map(
         error,
         fallbackMessage: _isLogin
             ? 'Login failed. Please check your details.'
@@ -99,6 +103,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       setState(() {
         _errorMessage = failure.message;
+        _fieldErrors = failure.validationErrors;
       });
     } finally {
       if (mounted) {
@@ -110,81 +115,46 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _login() async {
-    FocusScope.of(context).unfocus();
+    await ref
+        .read(authRepositoryProvider)
+        .login(
+          LoginRequest(
+            usernameOrEmail: _usernameOrEmailController.text.trim(),
+            password: _passwordController.text,
+          ),
+        );
 
-    setState(() {
-      _isLoading = true;
-    });
+    ref.invalidate(currentUserProvider);
 
-    try {
-      await ref
-          .read(authRepositoryProvider)
-          .login(
-            LoginRequest(
-              usernameOrEmail: _usernameOrEmailController.text.trim(),
-              password: _passwordController.text,
-            ),
-          );
+    final currentUser = await ref.read(currentUserProvider.future);
 
-      ref.invalidate(currentUserProvider);
+    if (!mounted) {
+      return;
+    }
 
-      final currentUser = await ref.read(currentUserProvider.future);
-
-      if (!mounted) {
+    switch (currentUser.role) {
+      case UserRole.manager:
+        context.go(AppRoutes.managerDashboard);
         return;
-      }
 
-      switch (currentUser.role) {
-        case UserRole.manager:
-          context.go(AppRoutes.managerDashboard);
+      case UserRole.tenant:
+        final hasBuilding = await ref
+            .read(buildingRepositoryProvider)
+            .hasMyBuilding();
+
+        if (!mounted) {
           return;
+        }
 
-        case UserRole.tenant:
-          final hasBuilding = await ref
-              .read(buildingRepositoryProvider)
-              .hasMyBuilding();
-
-          if (!mounted) {
-            return;
-          }
-
-          context.go(
-            hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
-          );
-          return;
-
-        default:
-          throw const ApiFailure(
-            message: 'This account type is not supported in the mobile app.',
-          );
-      }
-    } on ApiFailure catch (failure) {
-      if (!mounted) {
+        context.go(
+          hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
+        );
         return;
-      }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failure.message)));
-    } catch (error, stackTrace) {
-      debugPrint('LOGIN FAILED: $error');
-      debugPrint('LOGIN STACKTRACE: $stackTrace');
-
-      if (!mounted) {
-        return;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Something went wrong. Please try again.'),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      default:
+        throw const ApiFailure(
+          message: 'This account type is not supported in the mobile app.',
+        );
     }
   }
 
@@ -198,7 +168,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             password: _passwordController.text,
             displayName: _displayNameController.text.trim(),
             phoneNumber: _phoneNumberController.text.trim(),
-            role: 'TENANT',
+            role: _selectedRegisterRole,
           ),
         );
 
@@ -224,7 +194,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _switchMode() {
     setState(() {
       _mode = _isLogin ? AuthMode.register : AuthMode.login;
+      _selectedRegisterRole = UserRole.tenant;
       _errorMessage = null;
+      _fieldErrors = const {};
       _formKey.currentState?.reset();
       _passwordController.clear();
       _confirmPasswordController.clear();
@@ -263,7 +235,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _Header(isLogin: _isLogin),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 20),
 
                         if (_isLogin)
                           TextFormField(
@@ -285,7 +257,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             ),
                             validator: _requiredValidator,
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
                           TextFormField(
                             controller: _usernameController,
                             textInputAction: TextInputAction.next,
@@ -293,9 +265,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               label: 'Username',
                               icon: Icons.person_outline_rounded,
                             ),
-                            validator: _requiredValidator,
+                            validator: (value) {
+                              return _fieldError('username') ??
+                                  _requiredValidator(value);
+                            },
+                            onChanged: (_) => _clearFieldError('username'),
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -304,9 +280,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               label: 'Email',
                               icon: Icons.email_outlined,
                             ),
-                            validator: _emailValidator,
+                            validator: (value) {
+                              return _fieldError('email') ??
+                                  _emailValidator(value);
+                            },
+                            onChanged: (_) => _clearFieldError('email'),
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
                           TextFormField(
                             controller: _phoneNumberController,
                             keyboardType: TextInputType.phone,
@@ -321,9 +301,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   _phoneValidator(value);
                             },
                           ),
+                          const SizedBox(height: 12),
+                          _RegisterRoleSelector(
+                            selectedRole: _selectedRegisterRole,
+                            onChanged: (role) {
+                              setState(() {
+                                _selectedRegisterRole = role;
+                              });
+                            },
+                          ),
                         ],
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
 
                         TextFormField(
                           controller: _passwordController,
@@ -331,8 +320,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           textInputAction: _isLogin
                               ? TextInputAction.done
                               : TextInputAction.next,
-                          onFieldSubmitted: (_) =>
-                              _isLogin && !_isLoading ? _submit() : null,
+                          onFieldSubmitted: (_) {
+                            if (_isLogin && !_isLoading) {
+                              _submit();
+                            }
+                          },
                           decoration: _inputDecoration(
                             label: 'Password',
                             icon: Icons.lock_outline_rounded,
@@ -353,13 +345,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         ),
 
                         if (!_isLogin) ...[
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 12),
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
                             textInputAction: TextInputAction.done,
-                            onFieldSubmitted: (_) =>
-                                _isLoading ? null : _submit(),
+                            onFieldSubmitted: (_) {
+                              if (!_isLoading) {
+                                _submit();
+                              }
+                            },
                             decoration: _inputDecoration(
                               label: 'Confirm password',
                               icon: Icons.lock_reset_rounded,
@@ -408,7 +403,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 18),
 
                         SizedBox(
                           width: double.infinity,
@@ -424,7 +419,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             child: _isLoading
                                 ? const SizedBox(
                                     width: 22,
-                                    height: 22,
+                                    height: 18,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2.4,
                                       color: Colors.white,
@@ -440,7 +435,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -482,21 +477,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon),
+      prefixIcon: Icon(icon, size: 20),
       suffixIcon: suffixIcon,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: _officialBlue, width: 1.6),
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: _officialBlue, width: 1.5),
       ),
     );
   }
@@ -542,10 +539,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return 'Phone number is required.';
     }
 
-    // Remove spaces, dashes, and parentheses.
     final normalizedPhone = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-
-    // Accept international format with optional '+'.
     final phonePattern = RegExp(r'^\+?[0-9]{7,15}$');
 
     if (!phonePattern.hasMatch(normalizedPhone)) {
@@ -622,13 +616,112 @@ class _Header extends StatelessWidget {
         Text(
           isLogin
               ? 'Login to continue to Joritna'
-              : 'Join your building community',
+              : 'Choose your role and join Joritna',
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+}
+
+class _RegisterRoleSelector extends StatelessWidget {
+  const _RegisterRoleSelector({
+    required this.selectedRole,
+    required this.onChanged,
+  });
+
+  final UserRole selectedRole;
+  final ValueChanged<UserRole> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _RoleOptionCard(
+            title: 'Tenant',
+            subtitle: 'Join a building',
+            icon: Icons.home_outlined,
+            isSelected: selectedRole == UserRole.tenant,
+            onTap: () => onChanged(UserRole.tenant),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _RoleOptionCard(
+            title: 'Manager',
+            subtitle: 'Manage building',
+            icon: Icons.apartment_rounded,
+            isSelected: selectedRole == UserRole.manager,
+            onTap: () => onChanged(UserRole.manager),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RoleOptionCard extends StatelessWidget {
+  const _RoleOptionCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  static const Color _officialBlue = Color(0xFF2563EB);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? _officialBlue.withValues(alpha: 0.08)
+              : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? _officialBlue : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.6 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? _officialBlue : const Color(0xFF64748B),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: isSelected ? _officialBlue : const Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

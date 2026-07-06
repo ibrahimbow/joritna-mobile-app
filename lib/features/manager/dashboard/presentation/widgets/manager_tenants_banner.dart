@@ -16,7 +16,7 @@ class ManagerTenantsBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 2, 20, 14),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
       child: Material(
         color: Colors.white,
         elevation: 2,
@@ -26,7 +26,7 @@ class ManagerTenantsBanner extends StatelessWidget {
           borderRadius: BorderRadius.circular(22),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 14),
             child: Row(
               children: [
                 Container(

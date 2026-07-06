@@ -1,3 +1,5 @@
+import 'package:joritna_mobile/core/user/user_role.dart';
+
 class RegisterRequest {
   const RegisterRequest({
     required this.username,
@@ -13,7 +15,7 @@ class RegisterRequest {
   final String password;
   final String displayName;
   final String phoneNumber;
-  final String role;
+  final UserRole role;
 
   Map<String, dynamic> toJson() {
     return {
@@ -22,7 +24,20 @@ class RegisterRequest {
       'password': password,
       'displayName': displayName,
       'phoneNumber': phoneNumber,
-      'role': role,
+      'role': role.toBackendValue(),
     };
+  }
+}
+
+extension UserRoleRegisterMapper on UserRole {
+  String toBackendValue() {
+    switch (this) {
+      case UserRole.manager:
+        return 'MANAGER';
+      case UserRole.tenant:
+        return 'TENANT';
+      case UserRole.admin:
+        return 'ADMIN';
+    }
   }
 }
