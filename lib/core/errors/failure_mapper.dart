@@ -71,23 +71,23 @@ abstract final class FailureMapper {
     }
   }
 
-static String _messageForStatusCode(int? statusCode) {
-  if (statusCode == null) {
-    return ErrorMessages.unexpected;
-  }
+  static String _messageForStatusCode(int? statusCode) {
+    if (statusCode == null) {
+      return ErrorMessages.unexpected;
+    }
 
-  if (statusCode >= 500) {
-    return ErrorMessages.server;
-  }
+    if (statusCode >= 500) {
+      return ErrorMessages.server;
+    }
 
-  return switch (statusCode) {
-    400 => ErrorMessages.validation,
-    401 => ErrorMessages.unauthorized,
-    403 => ErrorMessages.forbidden,
-    404 => ErrorMessages.notFound,
-    409 => ErrorMessages.conflict,
-    429 => ErrorMessages.tooManyRequests,
-    _ => ErrorMessages.unexpected,
-  };
-}
+    return switch (statusCode) {
+      400 => ErrorMessages.validation,
+      401 => ErrorMessages.unauthorized,
+      403 => ErrorMessages.forbidden,
+      404 => ErrorMessages.notFound,
+      409 => ErrorMessages.conflict,
+      429 => ErrorMessages.tooManyRequests,
+      _ => ErrorMessages.unexpected,
+    };
+  }
 }
