@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/file/file_url_resolver.dart';
 import '../../data/models/announcement.dart';
 import 'announcement_category_chip.dart';
 
@@ -10,7 +11,7 @@ class AnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = announcement.imageUrl?.trim();
+    final imageUrl = FileUrlResolver.resolve(announcement.imageUrl?.trim());
     final accentColor = _accentColor(announcement.category);
 
     return Container(
@@ -28,78 +29,73 @@ class AnnouncementCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _CategoryIcon(category: announcement.category, color: accentColor),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _CategoryIcon(
+                  category: announcement.category,
+                  color: accentColor,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          announcement.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            height: 1.1,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      AnnouncementCategoryChip(category: announcement.category),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 15,
-                        color: Colors.blueGrey.shade500,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        _formatDate(announcement.createdAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.blueGrey.shade600,
+                        announcement.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          color: Color(0xFF111827),
                         ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            _formatTime(announcement.createdAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blueGrey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  if (imageUrl != null && imageUrl.isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: 135,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 14),
-                  Text(
-                    announcement.message,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blueGrey.shade700,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              announcement.message,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                fontWeight: FontWeight.w500,
+                color: Colors.blueGrey.shade700,
               ),
             ),
+            if (imageUrl.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  imageUrl,
+                  width: double.infinity,
+                  height: 150,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            AnnouncementCategoryChip(category: announcement.category),
           ],
         ),
       ),
@@ -117,25 +113,12 @@ class AnnouncementCard extends StatelessWidget {
     };
   }
 
-  String _formatDate(DateTime date) {
-    return '${_monthName(date.month)} ${date.day}, ${date.year}';
-  }
+  String _formatTime(DateTime date) {
+    final localDate = date.toLocal();
+    final hour = localDate.hour.toString().padLeft(2, '0');
+    final minute = localDate.minute.toString().padLeft(2, '0');
 
-  String _monthName(int month) {
-    return switch (month) {
-      1 => 'Jan',
-      2 => 'Feb',
-      3 => 'Mar',
-      4 => 'Apr',
-      5 => 'May',
-      6 => 'Jun',
-      7 => 'Jul',
-      8 => 'Aug',
-      9 => 'Sep',
-      10 => 'Oct',
-      11 => 'Nov',
-      _ => 'Dec',
-    };
+    return '$hour:$minute';
   }
 }
 
