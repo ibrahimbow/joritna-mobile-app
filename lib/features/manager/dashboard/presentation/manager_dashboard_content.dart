@@ -22,7 +22,7 @@ class ManagerDashboardContent extends StatelessWidget {
         children: [
           ManagerTenantsBanner(
             totalTenants: totalTenants,
-            onTap: () => context.go(AppRoutes.managerTenants),
+            onTap: () => context.go(AppRoutes.managerBuildingTenants),
           ),
           const Expanded(child: DashboardGrid(isManager: true)),
         ],

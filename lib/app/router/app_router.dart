@@ -3,25 +3,26 @@ import 'package:go_router/go_router.dart';
 
 import 'app_routes.dart';
 import 'route_guards.dart';
-import '../../features/auth/presentation/splash_screen.dart';
-import '../../features/auth/presentation/auth_screen.dart';
+
 import '../../features/auth/presentation/auth_mode.dart';
+import '../../features/auth/presentation/auth_screen.dart';
+import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/community/chat/presentation/chat_screen.dart';
 import '../../features/community/share_and_help/data/models/share_and_help_post.dart';
 import '../../features/community/share_and_help/presentation/create_post_screen.dart';
 import '../../features/community/share_and_help/presentation/share_and_help_screen.dart';
+import '../../features/manager/announcements/data/models/manager_announcement.dart';
+import '../../features/manager/announcements/presentation/create_manager_announcement_screen.dart';
+import '../../features/manager/announcements/presentation/edit_manager_announcement_screen.dart';
+import '../../features/manager/announcements/presentation/manager_announcements_screen.dart';
 import '../../features/manager/building/presentation/manager_building_screen.dart';
+import '../../features/manager/building_tenants/presentation/manager_building_tenants_screen.dart';
 import '../../features/manager/dashboard/presentation/manager_dashboard_screen.dart';
-import '../../features/manager/tenants/presentation/manager_tenants_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/shared/presentation/settings/settings_screen.dart';
 import '../../features/tenant/announcements/presentation/announcements_screen.dart';
 import '../../features/tenant/building/presentation/building_screen.dart';
 import '../../features/tenant/dashboard/presentation/tenant_dashboard_screen.dart';
-import '../../features/shared/presentation/settings/settings_screen.dart';
-import '../../features/manager/announcements/data/models/manager_announcement.dart';
-import '../../features/manager/announcements/presentation/manager_announcements_screen.dart';
-import '../../features/manager/announcements/presentation/create_manager_announcement_screen.dart';
-import '../../features/manager/announcements/presentation/edit_manager_announcement_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -79,7 +80,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Tenant routes
+      // Tenant
       GoRoute(
         path: AppRoutes.tenantDashboard,
         builder: (context, state) => const TenantDashboardScreen(),
@@ -115,18 +116,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsScreen(),
       ),
 
-      // Manager routes
+      // Manager
       GoRoute(
         path: AppRoutes.managerDashboard,
         builder: (context, state) => const ManagerDashboardScreen(),
       ),
       GoRoute(
-        path: AppRoutes.managerTenants,
-        builder: (context, state) => const ManagerTenantsScreen(),
-      ),
-      GoRoute(
         path: AppRoutes.managerBuilding,
         builder: (context, state) => const ManagerBuildingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerBuildingTenants,
+        builder: (context, state) {
+          final buildingId = state.extra as String?;
+
+          return ManagerBuildingTenantsScreen(buildingId: buildingId);
+        },
       ),
       GoRoute(
         path: AppRoutes.managerAnnouncements,
@@ -167,7 +172,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsScreen(),
       ),
 
-      // Shared routes
+      // Shared
       GoRoute(
         path: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
