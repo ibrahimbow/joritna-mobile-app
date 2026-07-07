@@ -18,6 +18,7 @@ import '../../features/tenant/dashboard/presentation/tenant_dashboard_screen.dar
 import '../../features/shared/presentation/settings/settings_screen.dart';
 import 'app_routes.dart';
 import 'route_guards.dart';
+import '../../features/auth/presentation/auth_mode.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(

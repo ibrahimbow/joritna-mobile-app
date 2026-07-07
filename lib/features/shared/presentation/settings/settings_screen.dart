@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../app/router/app_routes.dart';
 import '../../../auth/data/auth_providers.dart';
-import '../../../shared/presentation/layout/app_shell.dart';
-import 'widgets/change_password_sheet.dart';
-
-import '../../../tenant/building/data/building_providers.dart';
+import '../../../auth/data/auth_state_provider.dart';
 import '../../../community/chat/data/chat_providers.dart';
 import '../../../profile/data/profile_providers.dart';
-import '../../../auth/data/auth_state_provider.dart';
+import '../../../shared/presentation/layout/app_shell.dart';
+import '../../../tenant/building/data/building_providers.dart';
+import '../../../../core/user/current_user_provider.dart';
+import '../../../../core/user/user_role.dart';
+import 'widgets/change_password_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -46,6 +47,7 @@ class SettingsScreen extends ConsumerWidget {
     ref.invalidate(profileProvider);
     ref.invalidate(myBuildingProvider);
     ref.invalidate(chatStateNotifierProvider);
+    ref.invalidate(currentUserProvider);
 
     if (!context.mounted) {
       return;
@@ -56,9 +58,52 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentUserState = ref.watch(currentUserProvider);
     final buildingState = ref.watch(myBuildingProvider);
 
-    final content = SafeArea(
+    return currentUserState.when(
+      loading: () => const Scaffold(
+        body: SafeArea(
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ),
+      error: (_, __) => Scaffold(
+        body: _SettingsContent(
+          showJoinBuildingButton: false,
+          onLogout: () => _logout(context, ref),
+        ),
+      ),
+      data: (currentUser) {
+        final isTenant = currentUser.role == UserRole.tenant;
+        final shouldShowJoinBuildingButton =
+            isTenant && buildingState.hasError;
+
+        final content = _SettingsContent(
+          showJoinBuildingButton: shouldShowJoinBuildingButton,
+          onLogout: () => _logout(context, ref),
+        );
+
+        return AppShell(
+          selectedIndex: 0,
+          child: content,
+        );
+      },
+    );
+  }
+}
+
+class _SettingsContent extends StatelessWidget {
+  const _SettingsContent({
+    required this.showJoinBuildingButton,
+    required this.onLogout,
+  });
+
+  final bool showJoinBuildingButton;
+  final VoidCallback onLogout;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -67,14 +112,12 @@ class SettingsScreen extends ConsumerWidget {
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
-
           _SettingsTile(
             icon: Icons.person_outline_rounded,
             title: 'Profile',
             subtitle: 'Update your personal information',
             onTap: () => context.push(AppRoutes.profile),
           ),
-
           _SettingsTile(
             icon: Icons.lock_outline_rounded,
             title: 'Change Password',
@@ -88,24 +131,20 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
           ),
-
           _SettingsTile(
             icon: Icons.language_rounded,
             title: 'Language',
             subtitle: 'English',
             onTap: () {},
           ),
-
           _SettingsTile(
             icon: Icons.notifications_none_rounded,
             title: 'Notifications',
             subtitle: 'Manage notification preferences',
             onTap: () {},
           ),
-
-          if (buildingState.hasError) ...[
+          if (showJoinBuildingButton) ...[
             const SizedBox(height: 12),
-
             FilledButton.icon(
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
@@ -114,47 +153,36 @@ class SettingsScreen extends ConsumerWidget {
               icon: const Icon(Icons.apartment_rounded),
               label: const Text('Join Building'),
             ),
-
             const SizedBox(height: 20),
           ],
-
           const SizedBox(height: 30),
-
           FilledButton.icon(
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
               minimumSize: const Size.fromHeight(52),
             ),
-            onPressed: () => _logout(context, ref),
+            onPressed: onLogout,
             icon: const Icon(Icons.logout),
             label: const Text('Logout'),
           ),
         ],
       ),
     );
-
-    return buildingState.when(
-      loading: () => const Scaffold(
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
-      ),
-      error: (_, __) => Scaffold(body: content),
-      data: (_) => AppShell(selectedIndex: 0, child: content),
-    );
   }
 }
 
 class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
   const _SettingsTile({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
   });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

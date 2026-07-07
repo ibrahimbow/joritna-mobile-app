@@ -1,51 +1,39 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/dio_provider.dart';
 import '../../../tenant/building/data/models/building.dart';
+import '../domain/manager_building_repository.dart';
+import 'manager_building_api_client.dart';
+import 'manager_building_repository_impl.dart';
 
 final managerBuildingApiClientProvider = Provider<ManagerBuildingApiClient>((
   ref,
 ) {
-  return ManagerBuildingApiClient(dio: ref.watch(dioProvider));
+  final dio = ref.watch(dioProvider);
+
+  return ManagerBuildingApiClient(dio: dio);
+});
+
+final managerBuildingRepositoryProvider = Provider<ManagerBuildingRepository>((
+  ref,
+) {
+  final apiClient = ref.watch(managerBuildingApiClientProvider);
+
+  return ManagerBuildingRepositoryImpl(apiClient);
 });
 
 final myManagedBuildingsProvider = FutureProvider.autoDispose<List<Building>>((
   ref,
 ) async {
-  final apiClient = ref.watch(managerBuildingApiClientProvider);
+  final repository = ref.watch(managerBuildingRepositoryProvider);
 
-  return apiClient.getMyManagedBuildings();
+  return repository.getMyManagedBuildings();
 });
 
 final myManagedBuildingProvider = FutureProvider.autoDispose<Building?>((
   ref,
 ) async {
-  final buildings = await ref.watch(myManagedBuildingsProvider.future);
+  final repository = ref.watch(managerBuildingRepositoryProvider);
 
-  return buildings.isNotEmpty ? buildings.first : null;
+  return repository.getMyManagedBuilding();
 });
-
-class ManagerBuildingApiClient {
-  const ManagerBuildingApiClient({required Dio dio}) : _dio = dio;
-
-  final Dio _dio;
-
-  Future<List<Building>> getMyManagedBuildings() async {
-    final response = await _dio.get<List<dynamic>>('/manager/buildings');
-
-    final data = response.data ?? <dynamic>[];
-
-    return data
-        .map((json) => Building.fromJson(json as Map<String, dynamic>))
-        .toList(growable: false);
-  }
-
-  Future<Building> getMyBuildingById(String id) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/manager/buildings/$id',
-    );
-
-    return Building.fromJson(response.data!);
-  }
-}
