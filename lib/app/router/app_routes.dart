@@ -17,6 +17,8 @@ class AppRoutes {
   static const managerTenants = '/manager/tenants';
   static const managerBuilding = '/manager/building';
   static const managerAnnouncements = '/manager/announcements';
+  static const managerCreateAnnouncement = '/manager/announcements/create';
+  static const managerEditAnnouncement = '/manager/announcements/edit';
   static const managerChat = '/manager/chat';
   static const managerShareAndHelp = '/manager/share-and-help';
   static const managerCreatePost = '/manager/share-and-help/create';

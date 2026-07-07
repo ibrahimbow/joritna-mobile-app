@@ -63,9 +63,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return currentUserState.when(
       loading: () => const Scaffold(
-        body: SafeArea(
-          child: Center(child: CircularProgressIndicator()),
-        ),
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
       ),
       error: (_, __) => Scaffold(
         body: _SettingsContent(
@@ -75,18 +73,14 @@ class SettingsScreen extends ConsumerWidget {
       ),
       data: (currentUser) {
         final isTenant = currentUser.role == UserRole.tenant;
-        final shouldShowJoinBuildingButton =
-            isTenant && buildingState.hasError;
+        final shouldShowJoinBuildingButton = isTenant && buildingState.hasError;
 
         final content = _SettingsContent(
           showJoinBuildingButton: shouldShowJoinBuildingButton,
           onLogout: () => _logout(context, ref),
         );
 
-        return AppShell(
-          selectedIndex: 0,
-          child: content,
-        );
+        return AppShell(selectedIndex: 0, child: content);
       },
     );
   }

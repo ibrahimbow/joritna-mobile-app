@@ -1,13 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/auth_screen.dart';
+import 'app_routes.dart';
+import 'route_guards.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/auth/presentation/auth_screen.dart';
+import '../../features/auth/presentation/auth_mode.dart';
 import '../../features/community/chat/presentation/chat_screen.dart';
 import '../../features/community/share_and_help/data/models/share_and_help_post.dart';
 import '../../features/community/share_and_help/presentation/create_post_screen.dart';
 import '../../features/community/share_and_help/presentation/share_and_help_screen.dart';
-import '../../features/manager/announcements/presentation/manager_announcements_screen.dart';
 import '../../features/manager/building/presentation/manager_building_screen.dart';
 import '../../features/manager/dashboard/presentation/manager_dashboard_screen.dart';
 import '../../features/manager/tenants/presentation/manager_tenants_screen.dart';
@@ -16,9 +18,10 @@ import '../../features/tenant/announcements/presentation/announcements_screen.da
 import '../../features/tenant/building/presentation/building_screen.dart';
 import '../../features/tenant/dashboard/presentation/tenant_dashboard_screen.dart';
 import '../../features/shared/presentation/settings/settings_screen.dart';
-import 'app_routes.dart';
-import 'route_guards.dart';
-import '../../features/auth/presentation/auth_mode.dart';
+import '../../features/manager/announcements/data/models/manager_announcement.dart';
+import '../../features/manager/announcements/presentation/manager_announcements_screen.dart';
+import '../../features/manager/announcements/presentation/create_manager_announcement_screen.dart';
+import '../../features/manager/announcements/presentation/edit_manager_announcement_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -128,6 +131,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.managerAnnouncements,
         builder: (context, state) => const ManagerAnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerCreateAnnouncement,
+        builder: (context, state) => const CreateManagerAnnouncementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.managerEditAnnouncement,
+        builder: (context, state) {
+          final announcement = state.extra as ManagerAnnouncement;
+
+          return EditManagerAnnouncementScreen(announcement: announcement);
+        },
       ),
       GoRoute(
         path: AppRoutes.managerChat,
