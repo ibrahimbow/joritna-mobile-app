@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ShareAndHelpHeader extends StatelessWidget {
-  const ShareAndHelpHeader({
-    super.key,
-    required this.onCreatePost,
-  });
+  const ShareAndHelpHeader({super.key, required this.onCreatePost});
 
   final VoidCallback onCreatePost;
 
@@ -19,12 +16,7 @@ class ShareAndHelpHeader extends StatelessWidget {
         child: Container(
           width: double.infinity,
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            16,
-            20,
-            12,
-          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -55,16 +47,10 @@ class ShareAndHelpHeader extends StatelessWidget {
                 height: 44,
                 child: FilledButton.icon(
                   onPressed: onCreatePost,
-                  icon: const Icon(
-                    Icons.add_rounded,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.add_rounded, size: 20),
                   label: const Text(
                     'Create Post',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

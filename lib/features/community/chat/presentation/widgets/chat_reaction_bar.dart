@@ -14,54 +14,82 @@ class ChatReactionBar extends StatelessWidget {
   final ValueChanged<ChatReactionSummary>? onReactionTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     if (reactions.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+      spacing: 4,
+      runSpacing: 4,
       children: reactions
-          .map((reaction) {
-            final selected = reaction.reactedByCurrentUser;
-
-            return InkWell(
-              borderRadius: BorderRadius.circular(16),
+          .map((final ChatReactionSummary reaction) {
+            return _ReactionPill(
+              reaction: reaction,
               onTap: onReactionTap == null
                   ? null
-                  : () => onReactionTap!(reaction),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: selected
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.transparent,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(reaction.emoji, style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${reaction.count}',
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              ),
+                  : () {
+                      onReactionTap!(reaction);
+                    },
             );
           })
           .toList(growable: false),
+    );
+  }
+}
+
+final class _ReactionPill extends StatelessWidget {
+  const _ReactionPill({required this.reaction, this.onTap});
+
+  final ChatReactionSummary reaction;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(final BuildContext context) {
+    final bool selected = reaction.reactedByCurrentUser;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          height: 24,
+          padding: const EdgeInsets.symmetric(horizontal: 7),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: selected ? 0.10 : 0.07),
+                blurRadius: selected ? 6 : 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                reaction.emoji,
+                style: const TextStyle(fontSize: 13, height: 1),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                '${reaction.count}',
+                style: TextStyle(
+                  color: selected
+                      ? const Color(0xFF2563EB)
+                      : const Color(0xFF475569),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
