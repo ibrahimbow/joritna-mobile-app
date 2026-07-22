@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1042193210346",
+    "project_id": "joritna",
+    "storage_bucket": "joritna.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042193210346:android:446c7b9d4cc4170134b093",
+        "android_client_info": {
+          "package_name": "com.example.joritna_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8oMB6NzHvNcrXYp3ovWTlt9ZCrvQho_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1042193210346:android:ccdfc39d243ac13e34b093",
+        "android_client_info": {
+          "package_name": "com.joritna.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8oMB6NzHvNcrXYp3ovWTlt9ZCrvQho_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

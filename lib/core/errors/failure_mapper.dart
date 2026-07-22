@@ -54,9 +54,13 @@ abstract final class FailureMapper {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
         return ErrorMessages.timeout;
 
       case DioExceptionType.connectionError:
+        return ErrorMessages.network;
+
+      case DioExceptionType.badCertificate:
         return ErrorMessages.network;
 
       case DioExceptionType.badResponse:
@@ -65,7 +69,6 @@ abstract final class FailureMapper {
       case DioExceptionType.cancel:
         return fallbackMessage;
 
-      case DioExceptionType.badCertificate:
       case DioExceptionType.unknown:
         return fallbackMessage;
     }

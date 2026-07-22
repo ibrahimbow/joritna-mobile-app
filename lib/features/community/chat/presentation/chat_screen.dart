@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/file/file_type.dart';
 import '../../../../core/file/file_url_resolver.dart';
+import '../../../../core/notifications/providers/notification_badge_provider.dart';
 import '../../files/data/file_providers.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
@@ -36,7 +37,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
+
     _scrollController = ChatScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      ref.read(notificationBadgeProvider.notifier).markChatAsViewed();
+    });
   }
 
   @override
@@ -51,7 +61,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       imageQuality: 85,
     );
 
-    if (image == null) return;
+    if (image == null || !mounted) {
+      return;
+    }
 
     setState(() {
       _selectedImage = image;
@@ -68,7 +80,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final image = _selectedImage;
     final trimmedContent = content.trim();
 
-    if (trimmedContent.isEmpty && image == null) return;
+    if (trimmedContent.isEmpty && image == null) {
+      return;
+    }
 
     setState(() {
       _isUploadingImage = image != null;
@@ -89,13 +103,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .read(chatStateNotifierProvider.notifier)
           .sendMessage(content: trimmedContent, imageUrl: imageUrl);
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       setState(() {
         _selectedImage = null;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -115,8 +133,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final buildingState = ref.watch(chatBuildingProvider);
+
     final profileState = ref.watch(profileProvider);
+
     final chatState = ref.watch(chatStateNotifierProvider);
+
     final chatNotifier = ref.read(chatStateNotifierProvider.notifier);
 
     ref.listen(chatStateNotifierProvider, (previous, next) {
@@ -162,7 +183,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 _initializedBuildingId = buildingId;
 
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (!mounted) return;
+                  if (!mounted) {
+                    return;
+                  }
 
                   chatNotifier.initialize(
                     buildingId: buildingId,
@@ -203,7 +226,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                                color: const Color(0xFF0F172A),
                               ),
                         ),
                       ),
@@ -226,7 +249,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ),
                           ),
                           child: RefreshIndicator(
-                            onRefresh: () => chatNotifier.refresh(buildingId),
+                            onRefresh: () {
+                              return chatNotifier.refresh(buildingId);
+                            },
                             child: ChatMessageList(
                               messages: chatState.messages,
                               loading: chatState.loading,

@@ -6,30 +6,30 @@ class AnnouncementCategoryChip extends StatelessWidget {
   final String category;
 
   @override
-  Widget build(BuildContext context) {
-    final label = _label(category);
+  Widget build(final BuildContext context) {
+    final String normalizedCategory = category.trim().toUpperCase();
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: _backgroundColor(category),
+          color: _backgroundColor(normalizedCategory),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
-          label,
+          _label(normalizedCategory),
           style: TextStyle(
+            color: _textColor(normalizedCategory),
             fontSize: 11,
             fontWeight: FontWeight.w900,
-            color: _textColor(category),
           ),
         ),
       ),
     );
   }
 
-  String _label(String category) {
+  String _label(final String category) {
     return switch (category) {
       'EMERGENCY' => 'Emergency',
       'MAINTENANCE' => 'Maintenance',
@@ -40,7 +40,7 @@ class AnnouncementCategoryChip extends StatelessWidget {
     };
   }
 
-  Color _backgroundColor(String category) {
+  Color _backgroundColor(final String category) {
     return switch (category) {
       'EMERGENCY' => Colors.red.shade50,
       'MAINTENANCE' => Colors.orange.shade50,
@@ -51,7 +51,7 @@ class AnnouncementCategoryChip extends StatelessWidget {
     };
   }
 
-  Color _textColor(String category) {
+  Color _textColor(final String category) {
     return switch (category) {
       'EMERGENCY' => Colors.red.shade700,
       'MAINTENANCE' => Colors.orange.shade800,

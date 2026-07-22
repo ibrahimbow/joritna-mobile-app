@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
 
 class NotificationBadge extends StatelessWidget {
-  final int count;
-
   const NotificationBadge({super.key, required this.count});
+
+  final int count;
 
   @override
   Widget build(BuildContext context) {
+    if (count <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    final String badgeText = count > 9 ? '9+' : '$count';
+
     return Container(
-      padding: const EdgeInsets.all(6),
       constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
-      decoration: const BoxDecoration(
-        color: Color(0xFF3B82F6),
-        shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6),
+        borderRadius: BorderRadius.circular(999),
       ),
+      alignment: Alignment.center,
       child: Text(
-        count > 99 ? '99+' : '$count',
+        badgeText,
         style: const TextStyle(
           color: Colors.white,
           fontSize: 11,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
+          height: 1,
         ),
-        textAlign: TextAlign.center,
       ),
     );
   }

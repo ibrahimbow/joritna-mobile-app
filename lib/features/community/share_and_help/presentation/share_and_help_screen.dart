@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../app/router/app_routes.dart';
+import '../../../../../core/notifications/providers/notification_badge_provider.dart';
 import '../../../../../core/user/current_user_provider.dart';
 import '../../../../../core/user/user_role.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
@@ -10,14 +11,41 @@ import '../data/share_and_help_providers.dart';
 import 'widgets/share_and_help_header.dart';
 import 'widgets/share_and_help_post_card.dart';
 
-class ShareAndHelpScreen extends ConsumerWidget {
+class ShareAndHelpScreen extends ConsumerStatefulWidget {
   const ShareAndHelpScreen({super.key});
 
+  @override
+  ConsumerState<ShareAndHelpScreen> createState() => _ShareAndHelpScreenState();
+}
+
+class _ShareAndHelpScreenState extends ConsumerState<ShareAndHelpScreen> {
   static const double _headerHeight = 168;
 
+  late final Set<String> _newPostIdsForCurrentVisit;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+
+    final notificationBadgeState = ref.read(notificationBadgeProvider);
+
+    _newPostIdsForCurrentVisit = Set<String>.from(
+      notificationBadgeState.newShareAndHelpPostIds,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      ref.read(notificationBadgeProvider.notifier).markShareAndHelpAsViewed();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final postsState = ref.watch(shareAndHelpPostsProvider);
+
     final currentUserState = ref.watch(currentUserProvider);
 
     return AppShell(
@@ -26,9 +54,7 @@ class ShareAndHelpScreen extends ConsumerWidget {
         child: Stack(
           children: [
             RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(shareAndHelpPostsProvider);
-              },
+              onRefresh: _refreshPosts,
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
@@ -40,7 +66,7 @@ class ShareAndHelpScreen extends ConsumerWidget {
                       hasScrollBody: false,
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                    error: (error, _) => const SliverFillRemaining(
+                    error: (error, stackTrace) => const SliverFillRemaining(
                       hasScrollBody: false,
                       child: _ShareAndHelpErrorState(),
                     ),
@@ -56,7 +82,12 @@ class ShareAndHelpScreen extends ConsumerWidget {
                         itemCount: posts.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
-                          return ShareAndHelpPostCard(post: posts[index]);
+                          final post = posts[index];
+
+                          final bool isNew = _newPostIdsForCurrentVisit
+                              .contains(post.id);
+
+                          return ShareAndHelpPostCard(post: post, isNew: isNew);
                         },
                       );
                     },
@@ -71,13 +102,14 @@ class ShareAndHelpScreen extends ConsumerWidget {
               right: 0,
               child: currentUserState.when(
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => ShareAndHelpHeader(
-                  onCreatePost: () => context.go(AppRoutes.tenantCreatePost),
+                error: (error, stackTrace) => ShareAndHelpHeader(
+                  onCreatePost: () {
+                    context.push(AppRoutes.tenantCreatePost);
+                  },
                 ),
                 data: (user) => ShareAndHelpHeader(
                   onCreatePost: () {
-                    final route = _createPostRouteForRole(user.role);
-                    context.push(route);
+                    context.push(_createPostRouteForRole(user.role));
                   },
                 ),
               ),
@@ -88,11 +120,18 @@ class ShareAndHelpScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _refreshPosts() async {
+    ref.invalidate(shareAndHelpPostsProvider);
+
+    await ref.read(shareAndHelpPostsProvider.future);
+  }
+
   String _createPostRouteForRole(UserRole role) {
     switch (role) {
       case UserRole.manager:
       case UserRole.admin:
         return AppRoutes.managerCreatePost;
+
       case UserRole.tenant:
         return AppRoutes.tenantCreatePost;
     }

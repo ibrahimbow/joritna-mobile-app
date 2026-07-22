@@ -4,14 +4,6 @@ import '../../../../tenant/dashboard/presentation/tenant_dashboard_screen.dart';
 import 'notification_badge.dart';
 
 class DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color backgroundColor;
-  final Color iconColor;
-  final int? badgeCount;
-  final VoidCallback onTap;
-
   const DashboardCard({
     super.key,
     required this.icon,
@@ -20,8 +12,16 @@ class DashboardCard extends StatelessWidget {
     required this.backgroundColor,
     required this.iconColor,
     required this.onTap,
-    this.badgeCount,
+    this.badgeCount = 0,
   });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color backgroundColor;
+  final Color iconColor;
+  final int badgeCount;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -81,11 +81,11 @@ class DashboardCard extends StatelessWidget {
             ),
           ),
         ),
-        if (badgeCount != null && badgeCount! > 0)
+        if (badgeCount > 0)
           Positioned(
             right: -6,
             top: 20,
-            child: NotificationBadge(count: badgeCount!),
+            child: NotificationBadge(count: badgeCount),
           ),
       ],
     );

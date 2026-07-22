@@ -10,6 +10,8 @@ class ChatMessageBubble extends StatefulWidget {
     super.key,
     required this.message,
     required this.isMine,
+    required this.isFirstInGroup,
+    required this.isLastInGroup,
     this.onDelete,
     this.onReactionTap,
     this.onLongPress,
@@ -18,17 +20,24 @@ class ChatMessageBubble extends StatefulWidget {
 
   final ChatMessage message;
   final bool isMine;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
+
   final VoidCallback? onDelete;
   final VoidCallback? onLongPress;
+
   final void Function(String emoji)? onReactionTap;
+
   final String Function(String? url)? resolveFileUrl;
 
   @override
-  State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
+  State<ChatMessageBubble> createState() =>
+      _ChatMessageBubbleState();
 }
 
-class _ChatMessageBubbleState extends State<ChatMessageBubble> {
-  static const List<String> _availableReactions = [
+final class _ChatMessageBubbleState
+    extends State<ChatMessageBubble> {
+  static const List<String> _availableReactions = <String>[
     '👍',
     '❤️',
     '😂',
@@ -50,7 +59,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     widget.onLongPress?.call();
   }
 
-  void _handleReactionTap(String emoji) {
+  void _handleReactionTap(final String emoji) {
     widget.onReactionTap?.call(emoji);
 
     setState(() {
@@ -67,24 +76,32 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(final BuildContext context) {
+    final ThemeData theme = Theme.of(context);
 
-    final resolvedAvatarUrl =
-        widget.resolveFileUrl?.call(widget.message.senderAvatarUrl) ??
+    final String? resolvedAvatarUrl =
+        widget.resolveFileUrl?.call(
+          widget.message.senderAvatarUrl,
+        ) ??
         widget.message.senderAvatarUrl;
 
-    final resolvedImageUrl =
-        widget.resolveFileUrl?.call(widget.message.imageUrl) ??
+    final String? resolvedImageUrl =
+        widget.resolveFileUrl?.call(
+          widget.message.imageUrl,
+        ) ??
         widget.message.imageUrl;
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onLongPress: _handleLongPress,
       onTap: () {
-        if (_showActions) {
-          setState(() => _showActions = false);
+        if (!_showActions) {
+          return;
         }
+
+        setState(() {
+          _showActions = false;
+        });
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -93,12 +110,21 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             : MainAxisAlignment.start,
         children: [
           if (!widget.isMine)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChatAvatar(
-                displayName: widget.message.senderDisplayName,
-                avatarUrl: resolvedAvatarUrl,
-              ),
+            SizedBox(
+              width: 42,
+              child: widget.isLastInGroup
+                  ? Padding(
+                      padding: const EdgeInsets.only(
+                        right: 6,
+                      ),
+                      child: ChatAvatar(
+                        displayName:
+                            widget.message.senderDisplayName,
+                        avatarUrl: resolvedAvatarUrl,
+                        size: 34,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           Flexible(
             child: Column(
@@ -106,66 +132,90 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                if (!widget.isMine)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      widget.message.senderDisplayName,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
                 _BubbleContainer(
                   isMine: widget.isMine,
                   isDeleted: widget.message.isDeleted,
+                  isFirstInGroup: widget.isFirstInGroup,
+                  isLastInGroup: widget.isLastInGroup,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
+                      if (!widget.isMine &&
+                          widget.isFirstInGroup) ...[
+                        Text(
+                          widget.message.senderDisplayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium
+                              ?.copyWith(
+                                color: const Color(
+                                  0xFF2563EB,
+                                ),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                height: 1.1,
+                              ),
+                        ),
+                        const SizedBox(height: 5),
+                      ],
                       if (widget.message.isDeleted)
                         Text(
                           ChatTexts.deletedMessage,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: theme
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
                         )
                       else ...[
-                        if (widget.message.hasImage && resolvedImageUrl != null)
-                          _ChatImage(imageUrl: resolvedImageUrl),
-                        if (widget.message.hasImage && widget.message.hasText)
+                        if (widget.message.hasImage &&
+                            resolvedImageUrl != null)
+                          _ChatImage(
+                            imageUrl: resolvedImageUrl,
+                          ),
+                        if (widget.message.hasImage &&
+                            widget.message.hasText)
                           const SizedBox(height: 8),
                         if (widget.message.hasText)
                           Text(
                             widget.message.content!,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: widget.isMine
-                                  ? theme.colorScheme.onPrimary
-                                  : theme.colorScheme.onSurface,
-                            ),
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: widget.isMine
+                                      ? Colors.white
+                                      : const Color(
+                                          0xFF172033,
+                                        ),
+                                  fontSize: 14.5,
+                                  height: 1.35,
+                                ),
                           ),
                       ],
                       const SizedBox(height: 5),
                       Align(
-                        widthFactor: 1,
                         alignment: Alignment.bottomRight,
+                        widthFactor: 1,
                         child: Text(
-                          _formatTime(context, widget.message.createdAt),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 10,
-                            height: 1,
-                            fontWeight: FontWeight.w500,
-                            color: widget.message.isDeleted
-                                ? theme.colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.65,
-                                  )
-                                : widget.isMine
-                                ? Colors.white.withValues(alpha: 0.65)
-                                : theme.colorScheme.onSurfaceVariant.withValues(
-                                    alpha: 0.70,
-                                  ),
+                          _formatTime(
+                            context,
+                            widget.message.createdAt,
                           ),
+                          style: theme.textTheme.labelSmall
+                              ?.copyWith(
+                                color: widget.isMine
+                                    ? Colors.white.withValues(
+                                        alpha: 0.68,
+                                      )
+                                    : const Color(
+                                        0xFF64748B,
+                                      ),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                height: 1,
+                              ),
                         ),
                       ),
                     ],
@@ -173,76 +223,105 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 ),
                 if (widget.message.reactions.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: EdgeInsets.only(
+                      top: 4,
+                      left: widget.isMine ? 0 : 5,
+                      right: widget.isMine ? 5 : 0,
+                    ),
                     child: ChatReactionBar(
                       reactions: widget.message.reactions,
-                      onReactionTap: (reaction) =>
-                          widget.onReactionTap?.call(reaction.emoji),
+                      onReactionTap: (reaction) {
+                        widget.onReactionTap?.call(
+                          reaction.emoji,
+                        );
+                      },
                     ),
                   ),
-                if (_showActions && !widget.message.isDeleted)
+                if (_showActions &&
+                    !widget.message.isDeleted)
                   _InlineMessageActions(
                     isMine: widget.isMine,
                     reactions: _availableReactions,
-                    canDelete: widget.isMine && widget.onDelete != null,
+                    canDelete:
+                        widget.isMine &&
+                        widget.onDelete != null,
                     onReactionTap: _handleReactionTap,
                     onDelete: _handleDeleteTap,
                   ),
               ],
             ),
           ),
-          if (widget.isMine) const SizedBox(width: 44),
+          if (widget.isMine)
+            const SizedBox(width: 42),
         ],
       ),
     );
   }
 
-  String _formatTime(BuildContext context, DateTime dateTime) {
-    final localTime = dateTime.toLocal();
-    return TimeOfDay.fromDateTime(localTime).format(context);
+  String _formatTime(
+    final BuildContext context,
+    final DateTime dateTime,
+  ) {
+    return TimeOfDay.fromDateTime(
+      dateTime.toLocal(),
+    ).format(context);
   }
 }
 
-class _BubbleContainer extends StatelessWidget {
+final class _BubbleContainer extends StatelessWidget {
   const _BubbleContainer({
     required this.child,
     required this.isMine,
     required this.isDeleted,
+    required this.isFirstInGroup,
+    required this.isLastInGroup,
   });
 
   final Widget child;
   final bool isMine;
   final bool isDeleted;
+  final bool isFirstInGroup;
+  final bool isLastInGroup;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(final BuildContext context) {
+    final ThemeData theme = Theme.of(context);
 
     return IntrinsicWidth(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          minWidth: 72,
-          maxWidth: MediaQuery.sizeOf(context).width * 0.74,
+          minWidth: 76,
+          maxWidth:
+              MediaQuery.sizeOf(context).width * 0.76,
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.fromLTRB(
+            12,
+            8,
+            12,
+            7,
+          ),
           decoration: BoxDecoration(
             color: isDeleted
-                ? theme.colorScheme.surfaceContainerHighest
+                ? theme
+                      .colorScheme
+                      .surfaceContainerHighest
                 : isMine
-                ? theme.colorScheme.primary
-                : theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(18),
-              topRight: const Radius.circular(18),
-              bottomLeft: Radius.circular(isMine ? 18 : 6),
-              bottomRight: Radius.circular(isMine ? 6 : 18),
-            ),
+                ? const Color(0xFF2563EB)
+                : Colors.white,
+            border: !isMine && !isDeleted
+                ? Border.all(
+                    color: const Color(0xFFE2E8F0),
+                  )
+                : null,
+            borderRadius: _resolveBorderRadius(),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(
+                  alpha: 0.035,
+                ),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -251,9 +330,38 @@ class _BubbleContainer extends StatelessWidget {
       ),
     );
   }
+
+  BorderRadius _resolveBorderRadius() {
+    const Radius largeRadius = Radius.circular(18);
+    const Radius groupedRadius = Radius.circular(6);
+
+    if (isMine) {
+      return BorderRadius.only(
+        topLeft: largeRadius,
+        bottomLeft: largeRadius,
+        topRight: isFirstInGroup
+            ? largeRadius
+            : groupedRadius,
+        bottomRight: isLastInGroup
+            ? groupedRadius
+            : largeRadius,
+      );
+    }
+
+    return BorderRadius.only(
+      topRight: largeRadius,
+      bottomRight: largeRadius,
+      topLeft: isFirstInGroup
+          ? largeRadius
+          : groupedRadius,
+      bottomLeft: isLastInGroup
+          ? groupedRadius
+          : largeRadius,
+    );
+  }
 }
 
-class _InlineMessageActions extends StatelessWidget {
+final class _InlineMessageActions extends StatelessWidget {
   const _InlineMessageActions({
     required this.isMine,
     required this.reactions,
@@ -269,7 +377,7 @@ class _InlineMessageActions extends StatelessWidget {
   final VoidCallback onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         top: 8,
@@ -279,11 +387,18 @@ class _InlineMessageActions extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final emoji in reactions)
-            _ReactionAction(emoji: emoji, onTap: () => onReactionTap(emoji)),
+          for (final String emoji in reactions)
+            _ReactionAction(
+              emoji: emoji,
+              onTap: () {
+                onReactionTap(emoji);
+              },
+            ),
           if (canDelete) ...[
             const SizedBox(width: 6),
-            _DeleteAction(onTap: onDelete),
+            _DeleteAction(
+              onTap: onDelete,
+            ),
           ],
         ],
       ),
@@ -291,14 +406,17 @@ class _InlineMessageActions extends StatelessWidget {
   }
 }
 
-class _ReactionAction extends StatelessWidget {
-  const _ReactionAction({required this.emoji, required this.onTap});
+final class _ReactionAction extends StatelessWidget {
+  const _ReactionAction({
+    required this.emoji,
+    required this.onTap,
+  });
 
   final String emoji;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 6),
       child: InkWell(
@@ -311,29 +429,38 @@ class _ReactionAction extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(
+              color: const Color(0xFFE2E8F0),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withValues(
+                  alpha: 0.04,
+                ),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: Text(emoji, style: const TextStyle(fontSize: 17)),
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 17),
+          ),
         ),
       ),
     );
   }
 }
 
-class _DeleteAction extends StatelessWidget {
-  const _DeleteAction({required this.onTap});
+final class _DeleteAction extends StatelessWidget {
+  const _DeleteAction({
+    required this.onTap,
+  });
 
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
@@ -344,10 +471,14 @@ class _DeleteAction extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(
+                alpha: 0.04,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -363,21 +494,27 @@ class _DeleteAction extends StatelessWidget {
   }
 }
 
-class _ChatImage extends StatelessWidget {
-  const _ChatImage({required this.imageUrl});
+final class _ChatImage extends StatelessWidget {
+  const _ChatImage({
+    required this.imageUrl,
+  });
 
   final String imageUrl;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(final BuildContext context) {
+    final ThemeData theme = Theme.of(context);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Image.network(
         imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (
+          final BuildContext context,
+          final Object error,
+          final StackTrace? stackTrace,
+        ) {
           return Container(
             height: 140,
             alignment: Alignment.center,

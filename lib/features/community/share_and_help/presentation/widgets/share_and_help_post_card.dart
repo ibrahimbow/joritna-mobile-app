@@ -15,9 +15,14 @@ import 'post_author_row.dart';
 import 'post_image.dart';
 
 class ShareAndHelpPostCard extends ConsumerStatefulWidget {
-  const ShareAndHelpPostCard({super.key, required this.post});
+  const ShareAndHelpPostCard({
+    super.key,
+    required this.post,
+    required this.isNew,
+  });
 
   final ShareAndHelpPost post;
+  final bool isNew;
 
   @override
   ConsumerState<ShareAndHelpPostCard> createState() =>
@@ -441,8 +446,12 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: widget.isNew ? const Color(0xFFEFF6FF) : Colors.white,
+        border: Border.all(
+          color: widget.isNew
+              ? const Color(0xFF93C5FD)
+              : const Color(0xFFE2E8F0),
+        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -481,6 +490,27 @@ class _ShareAndHelpPostCardState extends ConsumerState<ShareAndHelpPostCard> {
                   ),
                 ),
               ),
+              if (widget.isNew) ...[
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'New',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 8),

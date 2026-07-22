@@ -5,6 +5,8 @@ import 'package:joritna_mobile/core/user/user_role.dart';
 import '../../../../core/user/current_user_provider.dart';
 import '../../../shared/presentation/dashboard/widgets/dashboard_header.dart';
 import '../../../shared/presentation/layout/app_shell.dart';
+import '../../building/data/manager_building_providers.dart';
+import '../../building_tenants/data/manager_building_tenants_providers.dart';
 import 'manager_dashboard_content.dart';
 
 class ManagerDashboardScreen extends ConsumerWidget {
@@ -13,6 +15,25 @@ class ManagerDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserState = ref.watch(currentUserProvider);
+    final buildingState = ref.watch(myManagedBuildingProvider);
+
+    final totalTenants = buildingState.maybeWhen(
+      data: (building) {
+        if (building == null) {
+          return 0;
+        }
+
+        final tenantsState = ref.watch(
+          managerBuildingTenantsProvider(building.id),
+        );
+
+        return tenantsState.maybeWhen(
+          data: (tenants) => tenants.length,
+          orElse: () => 0,
+        );
+      },
+      orElse: () => 0,
+    );
 
     return AppShell(
       selectedIndex: 0,
@@ -51,7 +72,9 @@ class ManagerDashboardScreen extends ConsumerWidget {
                   role: user.role,
                   avatarUrl: user.avatarUrl,
                 ),
-                const Expanded(child: ManagerDashboardContent(totalTenants: 0)),
+                Expanded(
+                  child: ManagerDashboardContent(totalTenants: totalTenants),
+                ),
               ],
             ),
           );

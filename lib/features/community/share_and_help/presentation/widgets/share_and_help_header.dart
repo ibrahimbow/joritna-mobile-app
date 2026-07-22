@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 class ShareAndHelpHeader extends StatelessWidget {
-  const ShareAndHelpHeader({super.key, required this.onCreatePost});
+  const ShareAndHelpHeader({
+    super.key,
+    required this.onCreatePost,
+  });
 
   final VoidCallback onCreatePost;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      elevation: 4,
+      elevation: 3,
       color: Colors.white,
       shadowColor: Colors.black12,
       child: SafeArea(
@@ -16,7 +19,12 @@ class ShareAndHelpHeader extends StatelessWidget {
         child: Container(
           width: double.infinity,
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            16,
+            20,
+            12,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -24,27 +32,40 @@ class ShareAndHelpHeader extends StatelessWidget {
                 'Share & Help',
                 style: TextStyle(
                   color: Color(0xFF0F172A),
-                  fontSize: 26,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 6),
+
+              const SizedBox(height: 4),
+
               const Text(
                 'Ask neighbours for help, share useful things, and strengthen your building community.',
                 style: TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 14,
-                  height: 1.4,
+                  height: 1.35,
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 14),
+
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 44,
                 child: FilledButton.icon(
                   onPressed: onCreatePost,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('Create Post'),
+                  icon: const Icon(
+                    Icons.add_rounded,
+                    size: 20,
+                  ),
+                  label: const Text(
+                    'Create Post',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

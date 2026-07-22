@@ -11,24 +11,29 @@ import '../../../tenant/building/data/building_providers.dart';
 import '../../../community/chat/data/chat_providers.dart';
 import '../../../profile/data/profile_providers.dart';
 import '../../../auth/data/auth_state_provider.dart';
+import '../../../../../core/notifications/providers/push_device_removal_service_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _logout(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Logout'),
           content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
               child: const Text('Logout'),
             ),
           ],
@@ -39,6 +44,8 @@ class SettingsScreen extends ConsumerWidget {
     if (confirmed != true) {
       return;
     }
+
+    await ref.read(pushDeviceRemovalServiceProvider).removeCurrentDevice();
 
     await ref.read(authRepositoryProvider).logout();
 

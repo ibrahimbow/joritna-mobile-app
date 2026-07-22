@@ -26,7 +26,7 @@ class AuthHeader extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         Text(
-          isLogin ? 'Welcome back' : 'Create your account',
+          isLogin ? 'Welcome' : 'Create your account',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
             color: AuthStyles.textDark,

@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/config/app_config.dart';
 import '../../../app/router/app_routes.dart';
 import '../../../core/errors/api_failure.dart';
 import '../../../core/errors/failure_mapper.dart';
+import '../../../core/notifications/providers/notification_initializer_provider.dart';
+import '../../../core/storage/token_storage_provider.dart';
 import '../../../core/user/current_user_provider.dart';
 import '../../../core/user/user_role.dart';
 import '../../manager/building/data/manager_building_providers.dart';
@@ -32,15 +37,27 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  final _formKey = GlobalKey<FormState>();
+  static const Duration _authenticationTimeout = Duration(seconds: 15);
 
-  final _usernameOrEmailController = TextEditingController();
-  final _usernameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _displayNameController = TextEditingController();
-  final _phoneNumberController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  static const Duration _buildingLookupTimeout = Duration(seconds: 10);
+
+  static const Duration _notificationInitializationTimeout = Duration(
+    seconds: 10,
+  );
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _usernameOrEmailController =
+      TextEditingController();
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _displayNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   late AuthMode _mode;
 
@@ -59,6 +76,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   void initState() {
     super.initState();
+
     _mode = widget.initialMode;
   }
 
@@ -71,13 +89,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _phoneNumberController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+
     super.dispose();
   }
 
   Future<void> _submit() async {
+    if (_isLoading) {
+      return;
+    }
+
     FocusScope.of(context).unfocus();
 
-    if (!_formKey.currentState!.validate()) {
+    final formState = _formKey.currentState;
+
+    if (formState == null || !formState.validate()) {
       return;
     }
 
@@ -93,9 +118,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       } else {
         await _register();
       }
+    } on TimeoutException catch (error, stackTrace) {
+      debugPrint('AUTH TIMEOUT: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage =
+            'The server is taking too long to respond. Please try again.';
+        _fieldErrors = const {};
+      });
     } catch (error, stackTrace) {
       debugPrint('AUTH FAILED: $error');
-      debugPrint('AUTH STACKTRACE: $stackTrace');
+      debugPrintStack(stackTrace: stackTrace);
 
       if (!mounted) {
         return;
@@ -129,15 +167,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             usernameOrEmail: _usernameOrEmailController.text.trim(),
             password: _passwordController.text,
           ),
-        );
+        )
+        .timeout(_authenticationTimeout);
 
     ref.invalidate(currentUserProvider);
 
-    final currentUser = await ref.read(currentUserProvider.future);
+    final currentUser = await ref
+        .read(currentUserProvider.future)
+        .timeout(_authenticationTimeout);
 
     if (!mounted) {
       return;
     }
+
+    unawaited(_initializeNotificationsSafely(userId: currentUser.id));
 
     await _navigateAfterAuthentication(currentUser.role);
   }
@@ -157,19 +200,64 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             phoneNumber: _phoneNumberController.text.trim(),
             role: _selectedRegisterRole,
           ),
-        );
+        )
+        .timeout(_authenticationTimeout);
 
     await ref
         .read(authRepositoryProvider)
-        .login(LoginRequest(usernameOrEmail: email, password: password));
+        .login(LoginRequest(usernameOrEmail: email, password: password))
+        .timeout(_authenticationTimeout);
 
     ref.invalidate(currentUserProvider);
+
+    final currentUser = await ref
+        .read(currentUserProvider.future)
+        .timeout(_authenticationTimeout);
 
     if (!mounted) {
       return;
     }
 
-    await _navigateAfterAuthentication(_selectedRegisterRole);
+    unawaited(_initializeNotificationsSafely(userId: currentUser.id));
+
+    await _navigateAfterAuthentication(currentUser.role);
+  }
+
+  Future<void> _initializeNotificationsSafely({required int userId}) async {
+    /*
+     * Capture provider dependencies before the AuthScreen can be disposed
+     * after navigation.
+     */
+    final tokenStorage = ref.read(tokenStorageProvider);
+    final notificationInitializer = ref.read(notificationInitializerProvider);
+
+    try {
+      final token = await tokenStorage.getAccessToken();
+
+      if (token == null || token.isEmpty) {
+        debugPrint(
+          'Notification initialization skipped because no access token exists.',
+        );
+
+        return;
+      }
+
+      await notificationInitializer
+          .initialize(
+            userId: userId,
+            socketUrl: '${AppConfig.webSocketBaseUrl}/ws/notifications',
+            accessToken: token,
+          )
+          .timeout(_notificationInitializationTimeout);
+    } on TimeoutException catch (error, stackTrace) {
+      debugPrint('Notification initialization timed out: $error');
+
+      debugPrintStack(stackTrace: stackTrace);
+    } catch (error, stackTrace) {
+      debugPrint('Notification initialization failed: $error');
+
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   Future<void> _navigateAfterAuthentication(UserRole role) async {
@@ -177,7 +265,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       case UserRole.manager:
         final hasBuilding = await ref
             .read(managerBuildingRepositoryProvider)
-            .hasMyManagedBuilding();
+            .hasMyManagedBuilding()
+            .timeout(_buildingLookupTimeout);
 
         if (!mounted) {
           return;
@@ -186,12 +275,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         context.go(
           hasBuilding ? AppRoutes.managerDashboard : AppRoutes.managerBuilding,
         );
+
         return;
 
       case UserRole.tenant:
         final hasBuilding = await ref
             .read(buildingRepositoryProvider)
-            .hasMyBuilding();
+            .hasMyBuilding()
+            .timeout(_buildingLookupTimeout);
 
         if (!mounted) {
           return;
@@ -200,6 +291,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         context.go(
           hasBuilding ? AppRoutes.tenantDashboard : AppRoutes.tenantBuilding,
         );
+
         return;
 
       default:
@@ -210,9 +302,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   void _switchMode() {
+    if (_isLoading) {
+      return;
+    }
+
     setState(() {
       _mode = _mode.toggled;
       _selectedRegisterRole = UserRole.tenant;
+
       _errorMessage = null;
       _fieldErrors = const {};
 

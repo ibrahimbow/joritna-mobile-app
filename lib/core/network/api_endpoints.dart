@@ -15,4 +15,6 @@ class ApiEndpoints {
   static const String managerAnnouncements = '/manager/announcements';
 
   static const String fileUpload = '/files/upload';
+
+  static const String pushDevices = '/notifications/push-devices';
 }
