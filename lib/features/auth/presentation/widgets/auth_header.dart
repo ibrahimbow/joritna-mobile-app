@@ -12,19 +12,16 @@ class AuthHeader extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 68,
-          height: 68,
+          width: 90,
+          height: 90,
           decoration: BoxDecoration(
-            color: AuthStyles.officialBlue.withValues(alpha: 0.12),
+            color: const Color.fromARGB(255, 255, 255, 255),
             borderRadius: BorderRadius.circular(22),
           ),
-          child: const Icon(
-            Icons.apartment_rounded,
-            color: AuthStyles.officialBlue,
-            size: 36,
-          ),
+          padding: const EdgeInsets.all(10),
+          child: Image.asset('assets/icons/app_icon.png', fit: BoxFit.contain),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 2),
         Text(
           isLogin ? 'Welcome' : 'Create your account',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -32,7 +29,7 @@ class AuthHeader extends StatelessWidget {
             color: AuthStyles.textDark,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 5),
         Text(
           isLogin
               ? 'Login to continue to Joritna'

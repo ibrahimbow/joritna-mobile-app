@@ -7,6 +7,7 @@ import '../../../../core/user/user_role.dart';
 class JoritnaBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
   final UserRole role;
+  final bool hasActiveBuildingMembership;
   final int announcementUnreadCount;
   final int chatUnreadCount;
   final int shareAndHelpUnreadCount;
@@ -15,6 +16,7 @@ class JoritnaBottomNavigationBar extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.role,
+    required this.hasActiveBuildingMembership,
     this.announcementUnreadCount = 0,
     this.chatUnreadCount = 0,
     this.shareAndHelpUnreadCount = 0,
@@ -86,9 +88,23 @@ class JoritnaBottomNavigationBar extends StatelessWidget {
     ),
   ];
 
+  static const List<_BottomNavigationDestination> _tenantWithoutBuildingItems =
+      [
+        _BottomNavigationDestination(
+          icon: Icons.apartment_rounded,
+          label: 'Join Building',
+          route: AppRoutes.tenantBuilding,
+        ),
+        _BottomNavigationDestination(
+          icon: Icons.settings_rounded,
+          label: 'Settings',
+          route: AppRoutes.tenantSettings,
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) {
-    final items = _itemsForRole(role);
+    final items = _itemsForUser();
 
     return Container(
       height: 72,
@@ -120,12 +136,17 @@ class JoritnaBottomNavigationBar extends StatelessWidget {
     );
   }
 
-  List<_BottomNavigationDestination> _itemsForRole(UserRole role) {
+  List<_BottomNavigationDestination> _itemsForUser() {
     switch (role) {
       case UserRole.manager:
       case UserRole.admin:
         return _managerItems;
+
       case UserRole.tenant:
+        if (!hasActiveBuildingMembership) {
+          return _tenantWithoutBuildingItems;
+        }
+
         return _tenantItems;
     }
   }
@@ -134,10 +155,13 @@ class JoritnaBottomNavigationBar extends StatelessWidget {
     switch (badgeType) {
       case _NavigationBadgeType.none:
         return 0;
+
       case _NavigationBadgeType.announcement:
         return announcementUnreadCount;
+
       case _NavigationBadgeType.chat:
         return chatUnreadCount;
+
       case _NavigationBadgeType.shareAndHelp:
         return shareAndHelpUnreadCount;
     }

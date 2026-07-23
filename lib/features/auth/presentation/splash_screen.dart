@@ -200,10 +200,11 @@ class _SplashContent extends StatelessWidget {
                         color: _primaryBlue.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      child: const Icon(
-                        Icons.apartment_rounded,
-                        size: 64,
-                        color: _primaryBlue,
+                      child: Image.asset(
+                        'assets/icons/app_icon.png',
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.contain,
                       ),
                     );
                   },
@@ -222,7 +223,7 @@ class _SplashContent extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Connected living, stronger communities',
+              'Building Better Communities',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _mutedText,
