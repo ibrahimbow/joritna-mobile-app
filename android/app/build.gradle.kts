@@ -1,8 +1,23 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("com.google.gms.google-services")
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+
+if (!keystorePropertiesFile.exists()) {
+    throw GradleException(
+        "Missing android/key.properties. Release signing cannot be configured.",
+    )
+}
+
+keystorePropertiesFile.inputStream().use {
+    keystoreProperties.load(it)
 }
 
 android {
@@ -30,9 +45,38 @@ android {
         multiDexEnabled = true
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+                ?: throw GradleException(
+                    "Missing keyAlias in android/key.properties",
+                )
+
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+                ?: throw GradleException(
+                    "Missing keyPassword in android/key.properties",
+                )
+
+            storePassword = keystoreProperties.getProperty("storePassword")
+                ?: throw GradleException(
+                    "Missing storePassword in android/key.properties",
+                )
+
+            val storeFilePath = keystoreProperties.getProperty("storeFile")
+                ?: throw GradleException(
+                    "Missing storeFile in android/key.properties",
+                )
+
+            storeFile = file(storeFilePath)
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
